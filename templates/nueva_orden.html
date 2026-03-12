@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Nueva Orden — Taller Felinormar{% endblock %}
+{% block page_title %}Nueva Orden de Servicio{% endblock %}
+
+{% block topbar_actions %}
+  <a href="/" class="btn btn-outline">← Volver</a>
+{% endblock %}
+
+{% block content %}
+<form method="POST">
+  <div style="display:grid; grid-template-columns:1fr 360px; gap:20px; align-items:start;">
+
+    <!-- LEFT PANEL -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+      <!-- Cliente -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Datos del Cliente</span>
+        </div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label>Nombre del Cliente *</label>
+            <input type="text" name="nombre_cliente" required placeholder="Ej. Juan García">
+          </div>
+          <div class="form-group">
+            <label>Teléfono *</label>
+            <input type="text" name="telefono" required placeholder="Ej. 5512345678">
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipo -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Datos del Equipo</span>
+        </div>
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label>Marca *</label>
+            <select name="marca" required>
+              <option value="">— Seleccionar —</option>
+              <option>Apple</option>
+              <option>Samsung</option>
+              <option>Xiaomi</option>
+              <option>Motorola</option>
+              <option>Huawei</option>
+              <option>LG</option>
+              <option>OnePlus</option>
+              <option>Google</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Modelo *</label>
+            <input type="text" name="modelo" required placeholder="Ej. iPhone 13 Pro">
+          </div>
+          <div class="form-group">
+            <label>IMEI (opcional)</label>
+            <input type="text" name="imei" placeholder="15 dígitos">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label>Contraseña / PIN del Equipo</label>
+          <input type="text" name="contrasena" placeholder="Opcional — se guarda cifrado">
+        </div>
+      </div>
+
+      <!-- Problema -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Diagnóstico</span>
+        </div>
+        <div class="form-group">
+          <label>Falla Reportada por el Cliente *</label>
+          <textarea name="problema" required placeholder="Describe el problema del equipo..."></textarea>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label>Notas Internas del Técnico</label>
+          <textarea name="notas" placeholder="Observaciones, accesorios recibidos, condición del equipo..."></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div style="display:flex; flex-direction:column; gap:16px; position:sticky; top:80px;">
+
+      <!-- Reparación y Costos -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Servicio y Costos</span>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo de Reparación</label>
+          <select name="reparacion_id" id="rep-select">
+            <option value="">— Sin asignar —</option>
+            {% for r in reparaciones %}
+            <option value="{{ r.id }}" data-costo="{{ r.costo }}">
+              {{ r.descripcion }} — ${{ "%.0f"|format(r.costo) }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-top:12px">
+          <label>Costo Total ($)</label>
+          <input type="number" name="costo_total" id="costo-input" step="0.01" min="0" value="0" placeholder="0.00">
+        </div>
+
+        <div class="form-group" style="margin-top:12px">
+          <label>Anticipo ($)</label>
+          <input type="number" name="anticipo" step="0.01" min="0" value="0" placeholder="0.00">
+        </div>
+
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px;">
+            <span>Fecha de Ingreso</span>
+            <span style="font-family:'DM Mono',monospace; color:var(--blue)">{{ hoy }}</span>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-family:'Syne',sans-serif; font-weight:700;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Crear Orden
+      </button>
+
+      <div class="alert alert-info" style="font-size:12px;">
+        💡 Al crear la orden se generará automáticamente el folio y el código QR de identificación.
+      </div>
+    </div>
+
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('rep-select').addEventListener('change', function() {
+    const opt = this.selectedOptions[0];
+    const costo = opt.dataset.costo;
+    if (costo) document.getElementById('costo-input').value = costo;
+  });
+</script>
+{% endblock %}

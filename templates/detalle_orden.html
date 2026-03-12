@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ orden.folio }} — Taller Felinormar{% endblock %}
+{% block page_title %}<span class="folio">{{ orden.folio }}</span>{% endblock %}
+
+{% block extra_head %}
+<!-- QR Code library via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="/" class="btn btn-outline">← Órdenes</a>
+  <a href="/orden/{{ orden.folio }}/editar" class="btn btn-outline">✏ Editar</a>
+{% endblock %}
+
+{% block content %}
+
+{% set badge_map = {
+  'Recibido': 'badge-recibido',
+  'En Proceso': 'badge-proceso',
+  'Listo': 'badge-listo',
+  'Entregado': 'badge-entregado'
+} %}
+
+<!-- WHATSAPP / GARANTÍA ALERTS -->
+{% if wa_link %}
+<div class="alert alert-success" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+  <span>📱 El equipo está listo. Notifica al cliente por WhatsApp:</span>
+  <a href="{{ wa_link }}" target="_blank" class="btn btn-wa btn-sm">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+    Enviar por WhatsApp
+  </a>
+</div>
+{% endif %}
+
+{% if garantia %}
+<div class="alert alert-info" style="margin-bottom:20px;">
+  🛡 <strong>Garantía:</strong> {{ garantia }}
+</div>
+{% endif %}
+
+<!-- MAIN GRID -->
+<div class="detail-grid">
+
+  <!-- LEFT: Info + Status -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Estatus + Cambio -->
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:16px;">
+        <span class="card-title">Estatus Actual</span>
+        <span class="badge {{ badge_map.get(orden.estatus, '') }}" style="font-size:13px; padding:5px 14px;">{{ orden.estatus }}</span>
+      </div>
+      <form method="POST" action="/orden/{{ orden.folio }}/estatus" style="display:flex; gap:8px; flex-wrap:wrap;">
+        {% for s, cls in [('Recibido','btn-outline'), ('En Proceso','btn-outline'), ('Listo','btn-green'), ('Entregado','btn-outline')] %}
+        <button type="submit" name="estatus" value="{{ s }}"
+          class="btn {{ cls }}"
+          {% if orden.estatus == s %}style="opacity:.4; cursor:default; pointer-events:none;"{% endif %}>
+          {{ s }}
+        </button>
+        {% endfor %}
+      </form>
+    </div>
+
+    <!-- Datos del equipo -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Información del Equipo</span>
+      </div>
+      <div class="info-row"><span class="info-label">Folio</span><span class="info-value folio">{{ orden.folio }}</span></div>
+      <div class="info-row"><span class="info-label">Marca / Modelo</span><span class="info-value">{{ orden.marca }} {{ orden.modelo }}</span></div>
+      {% if orden.imei %}<div class="info-row"><span class="info-label">IMEI</span><span class="info-value" style="font-family:'DM Mono',monospace; font-size:12px">{{ orden.imei }}</span></div>{% endif %}
+      {% if orden.contrasena %}<div class="info-row"><span class="info-label">Contraseña</span><span class="info-value" style="font-family:'DM Mono',monospace">{{ orden.contrasena }}</span></div>{% endif %}
+    </div>
+
+    <!-- Cliente -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Cliente</span>
+      </div>
+      <div class="info-row"><span class="info-label">Nombre</span><span class="info-value">{{ orden.nombre_cliente }}</span></div>
+      <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value" style="font-family:'DM Mono',monospace">{{ orden.tel_cliente }}</span></div>
+    </div>
+
+    <!-- Diagnóstico -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Diagnóstico y Costos</span>
+      </div>
+      <div class="info-row"><span class="info-label">Falla reportada</span><span class="info-value">{{ orden.problema }}</span></div>
+      {% if orden.desc_reparacion %}<div class="info-row"><span class="info-label">Reparación</span><span class="info-value">{{ orden.desc_reparacion }}</span></div>{% endif %}
+      {% if orden.notas %}<div class="info-row"><span class="info-label">Notas</span><span class="info-value" style="color:var(--muted)">{{ orden.notas }}</span></div>{% endif %}
+      <div class="info-row"><span class="info-label">Costo Total</span><span class="info-value" style="font-family:'DM Mono',monospace; color:var(--blue); font-size:16px; font-weight:700">${{ "%.2f"|format(orden.costo_total or 0) }}</span></div>
+      <div class="info-row"><span class="info-label">Anticipo</span><span class="info-value" style="font-family:'DM Mono',monospace; color:var(--green)">${{ "%.2f"|format(orden.anticipo or 0) }}</span></div>
+      <div class="info-row">
+        <span class="info-label">Saldo Pendiente</span>
+        <span class="info-value" style="font-family:'DM Mono',monospace; color:var(--red)">
+          ${{ "%.2f"|format((orden.costo_total or 0) - (orden.anticipo or 0)) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Fechas -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Fechas</span>
+      </div>
+      <div class="info-row"><span class="info-label">Fecha Ingreso</span><span class="info-value" style="font-family:'DM Mono',monospace">{{ orden.fecha_ingreso }}</span></div>
+      <div class="info-row">
+        <span class="info-label">Fecha Entrega</span>
+        <span class="info-value" style="font-family:'DM Mono',monospace">
+          {{ orden.fecha_entrega or '— Pendiente —' }}
+        </span>
+      </div>
+      <div class="info-row"><span class="info-label">Técnico</span><span class="info-value">{{ orden.tecnico or '—' }}</span></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: QR Card -->
+  <div style="display:flex; flex-direction:column; gap:16px; position:sticky; top:80px;">
+
+    <!-- QR CODE -->
+    <div class="card" style="text-align:center;">
+      <div class="card-title" style="margin-bottom:16px;">Código QR de Identificación</div>
+
+      <div id="qr-container" style="display:flex; justify-content:center; margin-bottom:16px;">
+        <div id="qrcode" style="background:#fff; padding:12px; border-radius:8px; display:inline-block;"></div>
+      </div>
+
+      <div class="folio" style="font-size:20px; margin-bottom:4px;">{{ orden.folio }}</div>
+      <div style="font-size:12px; color:var(--muted);">{{ orden.nombre_cliente }} — {{ orden.marca }} {{ orden.modelo }}</div>
+
+      <div class="divider"></div>
+
+      <button onclick="printQR()" class="btn btn-outline" style="width:100%; justify-content:center;">
+        🖨 Imprimir QR
+      </button>
+    </div>
+
+    <!-- MINI STATUS TIMELINE -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px;">Flujo de Servicio</div>
+      {% for s, icon in [('Recibido','📥'), ('En Proceso','🔧'), ('Listo','✅'), ('Entregado','📦')] %}
+      {% set estados = ['Recibido', 'En Proceso', 'Listo', 'Entregado'] %}
+      {% set current_idx = estados.index(orden.estatus) if orden.estatus in estados else 0 %}
+      {% set step_idx = estados.index(s) %}
+      <div style="display:flex; align-items:center; gap:12px; padding:8px 0;
+        {% if step_idx < current_idx %}opacity:.5{% elif step_idx == current_idx %}opacity:1{% else %}opacity:.3{% endif %}">
+        <div style="width:32px; height:32px; border-radius:50%;
+          background:{% if step_idx <= current_idx %}var(--blue){% else %}var(--border){% endif %};
+          display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">
+          {% if step_idx < current_idx %}✓{% else %}{{ icon }}{% endif %}
+        </div>
+        <span style="font-size:13px; font-weight:{% if step_idx == current_idx %}600{% else %}400{% endif %}">{{ s }}</span>
+      </div>
+      {% if not loop.last %}
+      <div style="width:1px; height:12px; background:var(--border); margin-left:16px;"></div>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Generate QR code
+  const qrData = {{ qr_data | tojson }};
+  new QRCode(document.getElementById('qrcode'), {
+    text: qrData,
+    width: 180,
+    height: 180,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  function printQR() {
+    const folio = {{ orden.folio | tojson }};
+    const cliente = {{ orden.nombre_cliente | tojson }};
+    const modelo = {{ (orden.marca ~ ' ' ~ orden.modelo) | tojson }};
+    const qrCanvas = document.querySelector('#qrcode canvas') || document.querySelector('#qrcode img');
+
+    let qrSrc = '';
+    if (qrCanvas && qrCanvas.tagName === 'CANVAS') {
+      qrSrc = qrCanvas.toDataURL();
+    } else if (qrCanvas) {
+      qrSrc = qrCanvas.src;
+    }
+
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <!DOCTYPE html><html><head>
+      <meta charset="UTF-8">
+      <style>
+        body { font-family: monospace; text-align:center; padding:20px; }
+        h2 { font-size:22px; margin-bottom:4px; }
+        p  { font-size:13px; color:#555; margin:2px 0; }
+        img { margin: 12px auto; display:block; }
+        .divider { border-top:1px dashed #ccc; margin:12px 0; }
+      </style></head><body>
+      <h2>⚙ TALLER FELINORMAR</h2>
+      <div class="divider"></div>
+      <img src="${qrSrc}" width="160" height="160">
+      <div class="divider"></div>
+      <h2>${folio}</h2>
+      <p>${cliente}</p>
+      <p>${modelo}</p>
+      <script>window.onload=()=>{window.print(); window.close();}<\/script>
+      </body></html>
+    `);
+    win.document.close();
+  }
+</script>
+{% endblock %}

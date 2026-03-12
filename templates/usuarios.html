@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuarios — Taller Felinormar{% endblock %}
+{% block page_title %}Gestión de Usuarios{% endblock %}
+
+{% block topbar_actions %}
+  <a href="/nuevo_usuario" class="btn btn-primary">+ Nuevo Usuario</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:0; max-width:700px;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td style="color:var(--muted); font-family:'DM Mono',monospace; font-size:12px">{{ u.id }}</td>
+          <td style="font-weight:500">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-dk));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#fff;">
+                {{ u.usuario[0].upper() }}
+              </div>
+              {{ u.usuario }}
+            </div>
+          </td>
+          <td>
+            {% if u.rol == 'admin' %}
+            <span class="badge badge-listo">Admin</span>
+            {% else %}
+            <span class="badge badge-recibido">Técnico</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.usuario != 'admin' %}
+            <form method="POST" action="/eliminar_usuario/{{ u.id }}"
+              onsubmit="return confirm('¿Eliminar usuario {{ u.usuario }}?')">
+              <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

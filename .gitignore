@@ -1,0 +1,65 @@
+# Base de datos SQLite
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos de configuración con datos sensibles
+config.py
+.env
+.env.local
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Uploads (archivos subidos por usuarios)
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Archivos temporales
+*.tmp
+*.bak
+*.backup
+
+# Archivos antiguos (estructura anterior)
+app.py.old
+setup_db.py.old

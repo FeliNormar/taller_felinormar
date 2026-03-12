@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar {{ orden.folio }} — Taller Felinormar{% endblock %}
+{% block page_title %}Editar Orden <span class="folio" style="font-size:16px;">{{ orden.folio }}</span>{% endblock %}
+
+{% block topbar_actions %}
+  <a href="/orden/{{ orden.folio }}" class="btn btn-outline">← Cancelar</a>
+{% endblock %}
+
+{% block content %}
+<form method="POST">
+  <div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
+
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Datos del Equipo</span></div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label>Marca</label>
+            <select name="marca" required>
+              {% for m in ['Apple','Samsung','Xiaomi','Motorola','Huawei','LG','OnePlus','Google','Otro'] %}
+              <option {% if orden.marca == m %}selected{% endif %}>{{ m }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Modelo</label>
+            <input type="text" name="modelo" value="{{ orden.modelo }}" required>
+          </div>
+          <div class="form-group">
+            <label>IMEI</label>
+            <input type="text" name="imei" value="{{ orden.imei or '' }}">
+          </div>
+          <div class="form-group">
+            <label>Contraseña del Equipo</label>
+            <input type="text" name="contrasena" value="{{ orden.contrasena or '' }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Diagnóstico</span></div>
+        <div class="form-group">
+          <label>Falla Reportada</label>
+          <textarea name="problema" required>{{ orden.problema }}</textarea>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label>Notas Internas</label>
+          <textarea name="notas">{{ orden.notas or '' }}</textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:16px; position:sticky; top:80px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Servicio y Costos</span></div>
+        <div class="form-group">
+          <label>Tipo de Reparación</label>
+          <select name="reparacion_id">
+            <option value="">— Sin asignar —</option>
+            {% for r in reparaciones %}
+            <option value="{{ r.id }}" data-costo="{{ r.costo }}"
+              {% if orden.reparacion_id == r.id %}selected{% endif %}>
+              {{ r.descripcion }} — ${{ "%.0f"|format(r.costo) }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label>Costo Total ($)</label>
+          <input type="number" name="costo_total" step="0.01" min="0" value="{{ orden.costo_total or 0 }}">
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label>Anticipo ($)</label>
+          <input type="number" name="anticipo" step="0.01" min="0" value="{{ orden.anticipo or 0 }}">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-family:'Syne',sans-serif; font-weight:700;">
+        Guardar Cambios
+      </button>
+    </div>
+
+  </div>
+</form>
+{% endblock %}

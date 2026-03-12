@@ -1,0 +1,115 @@
+"""
+Gestión de base de datos SQLite
+"""
+import sqlite3
+from flask import current_app, g
+from werkzeug.security import generate_password_hash
+
+
+def get_db():
+    """Obtener conexión a la base de datos"""
+    if 'db' not in g:
+        g.db = sqlite3.connect(
+            current_app.config['DATABASE_PATH'],
+            detect_types=sqlite3.PARSE_DECLTYPES
+        )
+        g.db.row_factory = sqlite3.Row
+        g.db.execute("PRAGMA foreign_keys = ON")
+    return g.db
+
+
+def close_db(e=None):
+    """Cerrar conexión a la base de datos"""
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
+
+
+def init_db():
+    """Inicializar base de datos con tablas y datos iniciales"""
+    db = get_db()
+    c = db.cursor()
+
+    # Tabla de usuarios
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario  TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            rol      TEXT NOT NULL DEFAULT 'tecnico'
+        )
+    ''')
+
+    # Tabla de reparaciones
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS reparaciones (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            descripcion TEXT NOT NULL,
+            costo       REAL NOT NULL DEFAULT 0
+        )
+    ''')
+
+    # Tabla de clientes
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS clientes (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre   TEXT NOT NULL,
+            telefono TEXT NOT NULL
+        )
+    ''')
+
+    # Tabla de órdenes
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS ordenes (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            folio          TEXT UNIQUE NOT NULL,
+            id_cliente     INTEGER,
+            marca          TEXT NOT NULL,
+            modelo         TEXT NOT NULL,
+            imei           TEXT,
+            contrasena     TEXT,
+            problema       TEXT NOT NULL,
+            reparacion_id  INTEGER,
+            estatus        TEXT NOT NULL DEFAULT 'Recibido',
+            costo_total    REAL DEFAULT 0,
+            anticipo       REAL DEFAULT 0,
+            fecha_ingreso  TEXT NOT NULL,
+            fecha_entrega  TEXT,
+            tecnico        TEXT,
+            notas          TEXT,
+            FOREIGN KEY (id_cliente)    REFERENCES clientes(id),
+            FOREIGN KEY (reparacion_id) REFERENCES reparaciones(id)
+        )
+    ''')
+
+    # Usuario admin por defecto
+    row = c.execute("SELECT id FROM usuarios WHERE usuario='admin'").fetchone()
+    if row is None:
+        c.execute(
+            "INSERT INTO usuarios (usuario, password, rol) VALUES (?,?,?)",
+            ('admin', generate_password_hash('admin123'), 'admin')
+        )
+
+    # Reparaciones de ejemplo
+    count = c.execute("SELECT COUNT(*) FROM reparaciones").fetchone()[0]
+    if count == 0:
+        demos = [
+            ('Cambio de pantalla', 850),
+            ('Cambio de batería', 450),
+            ('Reparación de placa', 1200),
+            ('Cambio de conector de carga', 350),
+            ('Limpieza por humedad', 300),
+            ('Cambio de cámara', 600),
+            ('Desbloqueo IMEI', 400),
+        ]
+        c.executemany(
+            "INSERT INTO reparaciones (descripcion, costo) VALUES (?,?)",
+            demos
+        )
+
+    db.commit()
+
+
+def init_app(app):
+    """Registrar funciones de base de datos con la aplicación"""
+    app.teardown_appcontext(close_db)

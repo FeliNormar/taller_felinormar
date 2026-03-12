@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Órdenes — Taller Felinormar{% endblock %}
+{% block page_title %}Órdenes de Servicio{% endblock %}
+
+{% block topbar_actions %}
+  <a href="/nueva_orden" class="btn btn-primary">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Nueva Orden
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-card blue">
+    <div class="stat-value">{{ stats.get('Recibido', 0) }}</div>
+    <div class="stat-label">Recibidos</div>
+  </div>
+  <div class="stat-card blue-main">
+    <div class="stat-value">{{ stats.get('En Proceso', 0) }}</div>
+    <div class="stat-label">En Proceso</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-value">{{ stats.get('Listo', 0) }}</div>
+    <div class="stat-label">Listos</div>
+  </div>
+  <div class="stat-card purple">
+    <div class="stat-value">{{ stats.get('Entregado', 0) }}</div>
+    <div class="stat-label">Entregados</div>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <a href="/?filtro=Todos" class="filter-btn {% if filtro=='Todos' %}active{% endif %}">Todos</a>
+  <a href="/?filtro=Recibido" class="filter-btn {% if filtro=='Recibido' %}active{% endif %}">Recibidos</a>
+  <a href="/?filtro=En Proceso" class="filter-btn {% if filtro=='En Proceso' %}active{% endif %}">En Proceso</a>
+  <a href="/?filtro=Listo" class="filter-btn {% if filtro=='Listo' %}active{% endif %}">Listos</a>
+  <a href="/?filtro=Entregado" class="filter-btn {% if filtro=='Entregado' %}active{% endif %}">Entregados</a>
+
+  <form method="GET" style="margin-left:auto; display:flex; gap:8px;">
+    <input type="hidden" name="filtro" value="{{ filtro }}">
+    <input class="search-input" type="text" name="q" value="{{ busqueda }}" placeholder="Buscar folio, cliente, modelo…">
+    <button type="submit" class="btn btn-outline">Buscar</button>
+    {% if busqueda %}<a href="/?filtro={{ filtro }}" class="btn btn-outline">✕</a>{% endif %}
+  </form>
+</div>
+
+<!-- TABLE -->
+<div class="card" style="padding:0;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Folio</th>
+          <th>Cliente</th>
+          <th>Equipo</th>
+          <th>Problema</th>
+          <th>Estatus</th>
+          <th>Ingreso</th>
+          <th>Costo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in ordenes %}
+        {% set badge_map = {
+          'Recibido': 'badge-recibido',
+          'En Proceso': 'badge-proceso',
+          'Listo': 'badge-listo',
+          'Entregado': 'badge-entregado'
+        } %}
+        <tr>
+          <td><span class="folio">{{ o.folio }}</span></td>
+          <td>
+            <div style="font-weight:500">{{ o.nombre_cliente or '—' }}</div>
+            <div style="font-size:11px; color:var(--muted)">{{ o.tel_cliente or '' }}</div>
+          </td>
+          <td>
+            <div style="font-weight:500">{{ o.marca }} {{ o.modelo }}</div>
+          </td>
+          <td style="max-width:180px; color:var(--muted)">
+            <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ o.problema }}</div>
+          </td>
+          <td>
+            <span class="badge {{ badge_map.get(o.estatus, '') }}">{{ o.estatus }}</span>
+          </td>
+          <td style="color:var(--muted); font-family:'DM Mono',monospace; font-size:12px">{{ o.fecha_ingreso }}</td>
+          <td style="font-family:'DM Mono',monospace; font-weight:500">${{ "%.2f"|format(o.costo_total or 0) }}</td>
+          <td>
+            <a href="/orden/{{ o.folio }}" class="btn btn-outline btn-sm">Ver</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align:center; padding:40px; color:var(--muted)">
+            No hay órdenes registradas.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

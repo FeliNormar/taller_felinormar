@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Catálogo — Taller Felinormar{% endblock %}
+{% block page_title %}Catálogo de Reparaciones{% endblock %}
+
+{% block content %}
+<div style="display:grid; grid-template-columns:1fr 380px; gap:20px; align-items:start; max-width:900px;">
+
+  <!-- List -->
+  <div class="card" style="padding:0;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Descripción</th>
+            <th>Costo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reparaciones %}
+          <tr>
+            <td style="color:var(--muted); font-family:'DM Mono',monospace; font-size:12px">{{ r.id }}</td>
+            <td style="font-weight:500">{{ r.descripcion }}</td>
+            <td style="font-family:'DM Mono',monospace; color:var(--blue)">${{ "%.2f"|format(r.costo) }}</td>
+            <td>
+              <form method="POST" action="/reparaciones/eliminar/{{ r.id }}"
+                onsubmit="return confirm('¿Eliminar esta reparación?')">
+                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" style="text-align:center; padding:30px; color:var(--muted)">Sin registros</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="card" style="position:sticky; top:80px;">
+    <div class="card-header">
+      <span class="card-title">Agregar Servicio</span>
+    </div>
+    <form method="POST" action="/reparaciones/nueva">
+      <div class="form-group">
+        <label>Descripción del Servicio</label>
+        <input type="text" name="descripcion" required placeholder="Ej. Cambio de pantalla">
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Precio ($)</label>
+        <input type="number" name="costo" step="0.01" min="0" value="0" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:16px; padding:10px;">
+        + Agregar
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

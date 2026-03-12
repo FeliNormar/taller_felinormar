@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Usuario — Taller Felinormar{% endblock %}
+{% block page_title %}Nuevo Usuario{% endblock %}
+
+{% block topbar_actions %}
+  <a href="/usuarios" class="btn btn-outline">← Volver</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:460px;">
+  <div class="card">
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label>Nombre de Usuario</label>
+        <input type="text" name="usuario" required placeholder="Ej. tecnico_juan">
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Contraseña</label>
+        <input type="password" name="password" required placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Rol</label>
+        <select name="rol">
+          <option value="tecnico">Técnico</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:20px; padding:11px;">
+        Crear Usuario
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
