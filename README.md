@@ -355,18 +355,21 @@ Ver más en **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#-solución-de-problemas)**
 
 ## 📄 Licencia
 
-[Especifica tu licencia aquí]
+Este software es propiedad de **Felipe Norberto Marcelino**.  
+Todos los derechos reservados © 2026.
 
 ---
 
 ## 👤 Autor
 
-Taller Felinormar  
-Sistema de Gestión de Reparaciones v2.0
+**Felipe Norberto Marcelino**  
+Desarrollador Full Stack  
+Taller Felinormar - Sistema de Gestión de Reparaciones v2.0
 
 ---
 
 **Última actualización:** 2026-03-12  
 **Versión:** 2.0 (Production-Ready)  
 **Python:** 3.11+  
-**Flask:** 3.x
+**Flask:** 3.x  
+**Desarrollado por:** Felipe Norberto Marcelino

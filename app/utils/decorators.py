@@ -1,5 +1,8 @@
 """
 Decoradores para autenticación y autorización
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 from functools import wraps
 from flask import session, redirect, url_for

@@ -1,5 +1,9 @@
 """
+Sistema de Gestión de Taller Felinormar
 WSGI entry point para servidores de producción (Gunicorn, uWSGI, etc.)
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 import os
 from app import create_app

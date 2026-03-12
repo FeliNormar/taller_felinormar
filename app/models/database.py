@@ -1,5 +1,8 @@
 """
 Gestión de base de datos SQLite
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 import sqlite3
 from flask import current_app, g

@@ -1,5 +1,8 @@
 """
 Rutas para gestión de órdenes de servicio
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 from flask import Blueprint, render_template, request, redirect, session, url_for
 from datetime import date

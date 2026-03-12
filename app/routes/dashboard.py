@@ -1,5 +1,8 @@
 """
 Rutas para dashboard analítico
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 from flask import Blueprint, render_template, request, session, jsonify
 from datetime import date, timedelta

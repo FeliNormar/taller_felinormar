@@ -6,6 +6,9 @@ Ejecutar ANTES de iniciar la aplicación por primera vez.
 
 Si la DB ya existe, este script agrega las columnas/tablas faltantes
 sin perder datos existentes.
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 import sqlite3
 import os

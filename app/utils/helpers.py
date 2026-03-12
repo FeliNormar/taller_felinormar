@@ -1,5 +1,8 @@
 """
 Funciones auxiliares
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 import urllib.parse
 from app.models.database import get_db

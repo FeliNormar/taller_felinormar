@@ -1,6 +1,9 @@
 """
 Taller Felinormar - Sistema de Gestión de Reparaciones
 Factory Pattern para Flask Application
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 from flask import Flask
 import os
