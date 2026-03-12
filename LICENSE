@@ -2,22 +2,72 @@ Copyright (c) 2026 Felipe Norberto Marcelino
 
 Todos los derechos reservados.
 
+LICENCIA DE EVALUACIÓN (TRIAL)
+
 Este software y su código fuente son propiedad exclusiva de Felipe Norberto Marcelino.
 
-Queda prohibida la reproducción, distribución, modificación o uso comercial 
-de este software sin el permiso expreso y por escrito del autor.
+TÉRMINOS DE LA LICENCIA DE EVALUACIÓN:
 
-EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O 
-IMPLÍCITA, INCLUYENDO PERO NO LIMITADO A GARANTÍAS DE COMERCIALIZACIÓN, 
-IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN. EN NINGÚN CASO LOS 
-AUTORES O TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGUNA RECLAMACIÓN, 
-DAÑOS U OTRAS RESPONSABILIDADES, YA SEA EN UNA ACCIÓN DE CONTRATO, AGRAVIO O 
-CUALQUIER OTRO MOTIVO, QUE SURJA DE O EN CONEXIÓN CON EL SOFTWARE O EL USO U 
-OTRO TIPO DE ACCIONES EN EL SOFTWARE.
+1. PERÍODO DE PRUEBA
+   Se concede una licencia de evaluación gratuita por un período de 15 días calendario
+   desde la fecha de instalación del software.
+
+2. USO PERMITIDO DURANTE LA EVALUACIÓN
+   Durante el período de prueba, se permite:
+   - Instalar y ejecutar el software en un entorno de prueba
+   - Evaluar todas las funcionalidades del sistema
+   - Realizar pruebas de concepto no comerciales
+   - Uso interno para evaluación técnica
+
+3. RESTRICCIONES
+   Queda estrictamente prohibido:
+   - Uso comercial o producción durante el período de evaluación
+   - Redistribución del software o código fuente
+   - Modificación, ingeniería inversa o descompilación
+   - Eliminación de avisos de copyright o licencia
+   - Uso después del vencimiento del período de prueba sin licencia comercial
+
+4. LICENCIA COMERCIAL
+   Después del período de evaluación de 15 días, se requiere adquirir una licencia
+   comercial para continuar usando el software. Para información sobre licencias
+   comerciales, contactar a: Felipe Norberto Marcelino
+
+5. SOPORTE TÉCNICO
+   Durante el período de evaluación, el soporte técnico es limitado y se proporciona
+   "tal cual está disponible" sin garantías de tiempo de respuesta.
+
+6. TERMINACIÓN
+   Esta licencia de evaluación termina automáticamente:
+   - Al finalizar el período de 15 días
+   - Si se violan los términos de esta licencia
+   - A discreción del propietario del software
+
+7. GARANTÍA Y RESPONSABILIDAD
+   EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O 
+   IMPLÍCITA, INCLUYENDO PERO NO LIMITADO A GARANTÍAS DE COMERCIALIZACIÓN, 
+   IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN. 
+   
+   EN NINGÚN CASO EL AUTOR O TITULAR DEL COPYRIGHT SERÁ RESPONSABLE DE NINGUNA 
+   RECLAMACIÓN, DAÑOS U OTRAS RESPONSABILIDADES, YA SEA EN UNA ACCIÓN DE CONTRATO, 
+   AGRAVIO O CUALQUIER OTRO MOTIVO, QUE SURJA DE O EN CONEXIÓN CON EL SOFTWARE O 
+   EL USO U OTRO TIPO DE ACCIONES EN EL SOFTWARE.
+
+8. PROPIEDAD INTELECTUAL
+   Todos los derechos de propiedad intelectual, incluyendo pero no limitado a
+   derechos de autor, marcas comerciales y secretos comerciales, permanecen como
+   propiedad exclusiva de Felipe Norberto Marcelino.
+
+---
+
+INFORMACIÓN DE CONTACTO:
+Para consultas sobre licencias comerciales, soporte o información adicional:
+Desarrollador: Felipe Norberto Marcelino
+Proyecto: Sistema de Gestión de Taller Felinormar
+Versión: 2.0 (Production Ready)
+Fecha: Marzo 2026
 
 ---
 
 Sistema de Gestión de Taller Felinormar
-Versión 2.0 - Production Ready
 Desarrollado por: Felipe Norberto Marcelino
-Fecha: Marzo 2026
+

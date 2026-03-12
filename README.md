@@ -355,8 +355,20 @@ Ver más en **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#-solución-de-problemas)**
 
 ## 📄 Licencia
 
+**Licencia de Evaluación (Trial) - 15 días**
+
 Este software es propiedad de **Felipe Norberto Marcelino**.  
 Todos los derechos reservados © 2026.
+
+Se ofrece una licencia de evaluación gratuita de 15 días para:
+- Pruebas de concepto
+- Evaluación técnica
+- Uso interno no comercial
+
+Después del período de evaluación, se requiere una licencia comercial.  
+Ver [LICENSE](LICENSE) para términos completos.
+
+**Para licencias comerciales, contactar a:** Felipe Norberto Marcelino
 
 ---
 
