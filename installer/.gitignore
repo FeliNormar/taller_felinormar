@@ -1,0 +1,7 @@
+# Ignorar archivos generados por Inno Setup
+output/
+*.exe
+*.tmp
+
+# Ignorar icono si es temporal
+# icon.ico

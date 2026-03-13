@@ -1,0 +1,57 @@
+TALLER FELINORMAR - Sistema de Gestión de Reparaciones v2.0
+
+Desarrollado por: Felipe Norberto Marcelino
+Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
+
+================================================================================
+LICENCIA DE EVALUACIÓN (TRIAL) - 15 DÍAS
+================================================================================
+
+Este instalador incluye una licencia de evaluación gratuita de 15 días.
+
+Durante el período de prueba, puede:
+  • Instalar y ejecutar el software en un entorno de prueba
+  • Evaluar todas las funcionalidades del sistema
+  • Realizar pruebas de concepto no comerciales
+
+Después del período de evaluación, se requiere adquirir una licencia comercial
+para continuar usando el software.
+
+================================================================================
+REQUISITOS DEL SISTEMA
+================================================================================
+
+  • Windows 10 o superior (64-bit recomendado)
+  • Python 3.11 o superior
+  • 2 GB de RAM mínimo (4 GB recomendado)
+  • 500 MB de espacio en disco
+  • Navegador web moderno (Chrome, Firefox, Edge)
+
+================================================================================
+CARACTERÍSTICAS PRINCIPALES
+================================================================================
+
+  ✓ Gestión completa de órdenes de servicio
+  ✓ Generación automática de folios (FN-0001, FN-0002...)
+  ✓ Dashboard analítico con gráficas
+  ✓ Notificaciones por WhatsApp
+  ✓ Códigos QR para equipos
+  ✓ Sistema de garantías (30 días)
+  ✓ Roles de usuario (Admin/Técnico)
+  ✓ Catálogo de reparaciones
+
+================================================================================
+SOPORTE Y CONTACTO
+================================================================================
+
+Para consultas sobre licencias comerciales, soporte técnico o información
+adicional, contactar a:
+
+  Desarrollador: Felipe Norberto Marcelino
+  Proyecto: Sistema de Gestión de Taller Felinormar
+  GitHub: https://github.com/FeliNormar/taller_felinormar
+
+================================================================================
+
+Al continuar con la instalación, acepta los términos de la licencia de
+evaluación. Lea el archivo LICENSE para más detalles.

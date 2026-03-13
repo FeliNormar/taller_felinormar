@@ -95,7 +95,22 @@ taller_felinormar/
 
 ## 🚀 Instalación Rápida
 
-### 1. Clonar el Repositorio
+### Opción 1: Instalador para Windows (Recomendado)
+
+**Descarga el instalador:**
+1. Ve a [Releases](https://github.com/FeliNormar/taller_felinormar/releases)
+2. Descarga `TallerFelinormar_v2.0_Setup.exe`
+3. Ejecuta el instalador
+4. Sigue el asistente de instalación
+5. ¡Listo! El sistema se iniciará automáticamente
+
+**Requisitos:**
+- Windows 10 o superior
+- Python 3.11+ (el instalador lo verificará)
+
+### Opción 2: Instalación Manual
+
+#### 1. Clonar el Repositorio
 ```bash
 git clone <tu-repo-url>
 cd taller_felinormar
