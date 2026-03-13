@@ -62,10 +62,17 @@ def create_app(config_name='production'):
     app.register_blueprint(reparaciones_bp)
     app.register_blueprint(dashboard_bp)
     
-    # Ruta de instalación inicial
+    # ============================================================
+    # RUTA DE INSTALACIÓN INICIAL (PRIMER ARRANQUE)
+    # ============================================================
     @app.route('/setup', methods=['GET', 'POST'])
     def setup():
-        """Instalación inicial del sistema"""
+        """
+        Instalación inicial del sistema - Primer Arranque
+        
+        Esta ruta solo es accesible cuando no hay usuarios en la BD.
+        Permite configurar el sistema por primera vez creando el usuario administrador.
+        """
         from werkzeug.security import generate_password_hash
         
         # Asegurar que las tablas existan
@@ -78,14 +85,14 @@ def create_app(config_name='production'):
         conn = get_db()
         try:
             usuarios = conn.execute("SELECT COUNT(*) as count FROM usuarios").fetchone()
+            
+            if usuarios and usuarios['count'] > 0:
+                # Ya hay usuarios, redirigir al login
+                flash('El sistema ya está configurado', 'info')
+                return redirect(url_for('auth.login'))
         except:
             # Tabla no existe, crearla
             init_db()
-            usuarios = conn.execute("SELECT COUNT(*) as count FROM usuarios").fetchone()
-        
-        if usuarios['count'] > 0:
-            # Ya hay usuarios, redirigir al login
-            return redirect(url_for('auth.login'))
         
         if request.method == 'POST':
             nombre_taller = request.form.get('nombre_taller', '').strip()
@@ -93,27 +100,56 @@ def create_app(config_name='production'):
             password = request.form.get('password', '').strip()
             password_confirm = request.form.get('password_confirm', '').strip()
             
-            # Validaciones
-            if not nombre_taller or not nombre_admin or not password:
-                flash('Todos los campos son obligatorios', 'error')
+            # ============================================================
+            # VALIDACIONES PROFESIONALES
+            # ============================================================
+            
+            # Validar campos obligatorios
+            if not nombre_taller:
+                flash('El nombre del taller es obligatorio', 'error')
                 return render_template('setup.html')
             
+            if not nombre_admin:
+                flash('El nombre del administrador es obligatorio', 'error')
+                return render_template('setup.html')
+            
+            if not password:
+                flash('La contraseña es obligatoria', 'error')
+                return render_template('setup.html')
+            
+            # Validar confirmación de contraseña
             if password != password_confirm:
                 flash('Las contraseñas no coinciden', 'error')
                 return render_template('setup.html')
             
+            # Validar longitud mínima de contraseña
             if len(password) < 6:
                 flash('La contraseña debe tener al menos 6 caracteres', 'error')
                 return render_template('setup.html')
             
+            # Validar que el nombre de usuario no tenga espacios
+            if ' ' in nombre_admin:
+                flash('El nombre de usuario no puede contener espacios', 'error')
+                return render_template('setup.html')
+            
             try:
-                # Crear usuario administrador
+                # Verificar que no exista el usuario (por seguridad)
+                existing = conn.execute(
+                    "SELECT id FROM usuarios WHERE usuario=?",
+                    (nombre_admin,)
+                ).fetchone()
+                
+                if existing:
+                    flash('El nombre de usuario ya existe', 'error')
+                    return render_template('setup.html')
+                
+                # Crear usuario administrador con contraseña encriptada
                 conn.execute(
                     "INSERT INTO usuarios (usuario, password, rol) VALUES (?, ?, ?)",
                     (nombre_admin, generate_password_hash(password), 'admin')
                 )
                 
-                # Crear configuración del taller (si existe la tabla)
+                # Crear configuración del taller (si existe la tabla - versión PRO)
                 try:
                     conn.execute('''
                         INSERT OR REPLACE INTO configuracion 
@@ -129,22 +165,31 @@ def create_app(config_name='production'):
                 return redirect(url_for('auth.login'))
                 
             except Exception as e:
+                conn.rollback()
                 flash(f'Error al configurar el sistema: {str(e)}', 'error')
                 return render_template('setup.html')
         
         return render_template('setup.html')
     
-    # Middleware para verificar instalación
+    # ============================================================
+    # MIDDLEWARE DE INICIALIZACIÓN
+    # ============================================================
     @app.before_request
     def check_setup():
-        """Verificar si el sistema necesita configuración inicial"""
+        """
+        Middleware que verifica si el sistema necesita configuración inicial.
+        
+        Si la tabla usuarios está vacía, redirige obligatoriamente a /setup.
+        Esto asegura que el sistema no pueda usarse sin configuración inicial.
+        """
         # Rutas que no requieren verificación
         excluded_routes = ['setup', 'static', 'auth.login', 'auth.logout']
         
+        # No verificar rutas excluidas
         if request.endpoint in excluded_routes or request.endpoint is None:
             return None
         
-        # Si la ruta empieza con /static/, no verificar
+        # No verificar archivos estáticos
         if request.path.startswith('/static/'):
             return None
         
@@ -157,9 +202,11 @@ def create_app(config_name='production'):
                 # No hay usuarios, redirigir a setup
                 return redirect(url_for('setup'))
         except Exception:
-            # Error al verificar, intentar crear tablas
+            # Error al verificar (probablemente tabla no existe)
+            # Intentar crear tablas y redirigir a setup
             try:
                 init_db()
+                return redirect(url_for('setup'))
             except:
                 pass
         
