@@ -68,9 +68,20 @@ def create_app(config_name='production'):
         """Instalación inicial del sistema"""
         from werkzeug.security import generate_password_hash
         
+        # Asegurar que las tablas existan
+        try:
+            init_db()
+        except:
+            pass  # Ya están creadas
+        
         # Verificar si ya hay usuarios
         conn = get_db()
-        usuarios = conn.execute("SELECT COUNT(*) as count FROM usuarios").fetchone()
+        try:
+            usuarios = conn.execute("SELECT COUNT(*) as count FROM usuarios").fetchone()
+        except:
+            # Tabla no existe, crearla
+            init_db()
+            usuarios = conn.execute("SELECT COUNT(*) as count FROM usuarios").fetchone()
         
         if usuarios['count'] > 0:
             # Ya hay usuarios, redirigir al login
@@ -142,8 +153,8 @@ def create_app(config_name='production'):
                 # No hay usuarios, redirigir a setup
                 return redirect(url_for('setup'))
         except:
-            # Error al verificar, continuar normal
-            pass
+            # Error al verificar (probablemente tabla no existe), redirigir a setup
+            return redirect(url_for('setup'))
         
         return None
     
