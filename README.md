@@ -1,22 +1,22 @@
-# ⚙ Taller Felinormar — Sistema de Gestión v2.0
+#  Taller Felinormar — Sistema de Gestión v2.0
 
 Sistema profesional de gestión para taller de reparación de celulares.  
 **Arquitectura Production-Ready** con Factory Pattern y Blueprints.
 
-## 🎯 Características
+## Características
 
-- ✅ Gestión completa de órdenes de servicio
-- ✅ Generación automática de folios (FN-0001, FN-0002...)
-- ✅ Dashboard analítico con gráficas (Chart.js)
-- ✅ Notificaciones por WhatsApp
-- ✅ Códigos QR para equipos
-- ✅ Sistema de garantías (30 días)
-- ✅ Roles de usuario (Admin/Técnico)
-- ✅ Catálogo de reparaciones
+-  Gestión completa de órdenes de servicio
+-  Generación automática de folios (FN-0001, FN-0002...)
+- Dashboard analítico con gráficas (Chart.js)
+   Notificaciones por WhatsApp
+- Códigos QR para equipos
+-  Sistema de garantías (30 días)
+- Roles de usuario (Admin/Técnico)
+   Catálogo de reparaciones
 
 ---
 
-## 🛠 Stack Tecnológico
+##  Stack Tecnológico
 
 ### Backend
 - **Python 3.11+** - Lenguaje principal
@@ -39,7 +39,7 @@ Sistema profesional de gestión para taller de reparación de celulares.
 
 ---
 
-## 📁 Estructura del Proyecto
+##Estructura del Proyecto
 
 ```
 taller_felinormar/
@@ -93,9 +93,9 @@ taller_felinormar/
 
 ---
 
-## 🚀 Instalación Rápida
+## Instalación Rápida
 
-### Opción 1: Instalador para Windows (Recomendado)
+### Opción 1: Instalador para Windows "Recomendado"
 
 **Descarga el instalador:**
 1. Ve a [Releases](https://github.com/FeliNormar/taller_felinormar/releases)
@@ -153,17 +153,17 @@ Accede a: **http://localhost:5000**
 - Usuario: `admin`
 - Contraseña: `admin123`
 
-⚠️ **Cambia la contraseña en producción**
+ **Cambia la contraseña en producción**
 
 ---
 
-## 🌐 Despliegue a Producción
+##  Despliegue a Producción
 
 ### Plataformas Soportadas
-- ✅ **Render** (Recomendado - Free tier disponible)
-- ✅ **Railway** (Fácil despliegue)
-- ✅ **VPS** (Ubuntu/Debian con Nginx)
-- ✅ **Heroku** (Con Procfile incluido)
+-  **Render** (Recomendado - Free tier disponible)
+- **Railway** (Fácil despliegue)
+-  **VPS** (Ubuntu/Debian con Nginx)
+-  **Heroku** (Con Procfile incluido)
 
 ### Guía Completa
 Ver **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** para instrucciones detalladas de despliegue en cada plataforma.
@@ -181,7 +181,7 @@ Ver **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** para instrucciones detalladas d
 
 ---
 
-## 🔒 Seguridad
+##  Seguridad
 
 ### Configuración por Entorno
 
@@ -196,18 +196,18 @@ Ver **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** para instrucciones detalladas d
 - SECRET_KEY desde variable de entorno (obligatorio)
 
 ### Características de Seguridad
-- ✅ Contraseñas hasheadas (PBKDF2-SHA256)
-- ✅ Sesiones seguras con cookies HttpOnly
-- ✅ Protección CSRF integrada
-- ✅ SQL injection prevention (consultas parametrizadas)
-- ✅ XSS protection (escape automático de Jinja2)
-- ✅ Variables de entorno para secretos
+-  Contraseñas hasheadas (PBKDF2-SHA256)
+-  Sesiones seguras con cookies HttpOnly
+-  Protección CSRF integrada
+-  SQL injection prevention (consultas parametrizadas)
+- XSS protection (escape automático de Jinja2)
+-  Variables de entorno para secretos
 
 Ver **[docs/SEGURIDAD.md](docs/SEGURIDAD.md)** para más detalles.
 
 ---
 
-## 📚 Documentación
+##  Documentación
 
 ### Documentación Esencial
 - **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Guía completa de despliegue
@@ -218,7 +218,7 @@ Ver **[docs/SEGURIDAD.md](docs/SEGURIDAD.md)** para más detalles.
 
 ---
 
-## 🔧 Comandos Útiles
+##  Comandos Útiles
 
 ### Desarrollo
 ```bash
@@ -247,7 +247,7 @@ cp backups/backup_YYYYMMDD.db instance/taller_felinormar.db
 
 ---
 
-## 🎯 Módulos y Funcionalidades
+##  Módulos y Funcionalidades
 
 ### 1. Gestión de Órdenes
 - Folios automáticos (FN-XXXX)
@@ -258,10 +258,10 @@ cp backups/backup_YYYYMMDD.db instance/taller_felinormar.db
 ### 2. Estatus del Flujo
 | Estatus | Descripción |
 |---------|-------------|
-| 🔵 Recibido | Equipo ingresado |
-| 🟡 En Proceso | Reparación en curso |
-| 🟢 Listo | Reparación completada |
-| 🟣 Entregado | Equipo entregado |
+|  Recibido | Equipo ingresado |
+|  En Proceso | Reparación en curso |
+|  Listo | Reparación completada |
+|  Entregado | Equipo entregado |
 
 ### 3. Código QR Automático
 - Generado al abrir detalle de orden
@@ -290,39 +290,39 @@ cp backups/backup_YYYYMMDD.db instance/taller_felinormar.db
 
 ---
 
-## 🔄 Diferencias con Versión Anterior
+##  Diferencias con Versión Anterior
 
 ### Mejoras en v2.0
 
-✅ **Arquitectura Profesional**
+ **Arquitectura Profesional**
 - Factory Pattern para crear la app
 - Blueprints para rutas modulares
 - Separación de responsabilidades (MVC)
 
-✅ **Configuración por Entorno**
+ **Configuración por Entorno**
 - Development, Production, Testing
 - Variables de entorno
 - DEBUG automático según entorno
 
-✅ **Seguridad Mejorada**
+ **Seguridad Mejorada**
 - SECRET_KEY obligatoria en producción
 - Cookies seguras (HttpOnly, Secure)
 - Rutas absolutas para BD
 
-✅ **Production-Ready**
+**Production-Ready**
 - Gunicorn configurado
 - Procfile para plataformas cloud
 - Carpeta instance/ para persistencia
 - Logs y monitoreo
 
-✅ **Mantenibilidad**
+**Mantenibilidad**
 - Código modular y organizado
 - Fácil de escalar
 - Documentación completa
 
 ---
 
-## 🐛 Solución de Problemas
+##  Solución de Problemas
 
 ### Error: "No module named 'app'"
 ```bash
@@ -348,7 +348,7 @@ Ver más en **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#-solución-de-problemas)**
 
 ---
 
-## 📊 Métricas del Proyecto
+##  Métricas del Proyecto
 
 - **Líneas de código:** ~1,500 (Python + HTML)
 - **Archivos:** 25+ archivos organizados
@@ -358,7 +358,7 @@ Ver más en **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#-solución-de-problemas)**
 
 ---
 
-## 🤝 Contribuir
+## Contribuir
 
 1. Fork el proyecto
 2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
@@ -368,7 +368,7 @@ Ver más en **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#-solución-de-problemas)**
 
 ---
 
-## 📄 Licencia
+##  Licencia
 
 **Licencia de Evaluación (Trial) - 15 días**
 
@@ -390,7 +390,6 @@ Ver [LICENSE](LICENSE) para términos completos.
 ## 👤 Autor
 
 **Felipe Norberto Marcelino**  
-Desarrollador Full Stack  
 Taller Felinormar - Sistema de Gestión de Reparaciones v2.0
 
 ---
