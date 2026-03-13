@@ -85,13 +85,8 @@ def init_db():
         )
     ''')
 
-    # Usuario admin por defecto
-    row = c.execute("SELECT id FROM usuarios WHERE usuario='admin'").fetchone()
-    if row is None:
-        c.execute(
-            "INSERT INTO usuarios (usuario, password, rol) VALUES (?,?,?)",
-            ('admin', generate_password_hash('admin123'), 'admin')
-        )
+    # NO crear usuario admin por defecto
+    # El usuario se crea en la instalación inicial (/setup)
 
     # Reparaciones de ejemplo
     count = c.execute("SELECT COUNT(*) FROM reparaciones").fetchone()[0]
