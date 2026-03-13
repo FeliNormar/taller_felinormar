@@ -70,3 +70,19 @@ static/uploads/*
 # Archivos antiguos (estructura anterior)
 app.py.old
 setup_db.py.old
+
+# ============================================
+# FUNCIONES PRO (NO SUBIR A GIT)
+# ============================================
+# Estas funciones son exclusivas de la versión comercial
+
+# Configuración del taller (PRO)
+app/routes/configuracion.py
+templates/configuracion.html
+
+# Versiones PRO de archivos existentes
+# (mantener versiones básicas en Git)
+# app/utils/helpers.py.pro
+# scripts/setup_db.py.pro
+# app/__init__.py.pro
+# templates/base.html.pro
