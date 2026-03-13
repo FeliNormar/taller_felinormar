@@ -5,7 +5,7 @@ Factory Pattern para Flask Application
 Desarrollado por: Felipe Norberto Marcelino
 Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
-from flask import Flask, redirect, url_for, render_template, request, flash
+from flask import Flask, redirect, url_for, render_template, request, flash, session
 import os
 import sys
 
@@ -139,22 +139,29 @@ def create_app(config_name='production'):
     def check_setup():
         """Verificar si el sistema necesita configuración inicial"""
         # Rutas que no requieren verificación
-        excluded_routes = ['setup', 'static', 'auth.login']
+        excluded_routes = ['setup', 'static', 'auth.login', 'auth.logout']
         
-        if request.endpoint in excluded_routes:
+        if request.endpoint in excluded_routes or request.endpoint is None:
             return None
         
-        # Verificar si hay usuarios
+        # Si la ruta empieza con /static/, no verificar
+        if request.path.startswith('/static/'):
+            return None
+        
+        # Verificar si hay usuarios en la BD
         try:
             conn = get_db()
             usuarios = conn.execute("SELECT COUNT(*) as count FROM usuarios").fetchone()
             
-            if usuarios['count'] == 0:
+            if usuarios and usuarios['count'] == 0:
                 # No hay usuarios, redirigir a setup
                 return redirect(url_for('setup'))
-        except:
-            # Error al verificar (probablemente tabla no existe), redirigir a setup
-            return redirect(url_for('setup'))
+        except Exception:
+            # Error al verificar, intentar crear tablas
+            try:
+                init_db()
+            except:
+                pass
         
         return None
     

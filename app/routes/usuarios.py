@@ -33,12 +33,29 @@ def index():
 @admin_required
 def nuevo_usuario():
     """Crear nuevo usuario"""
-    error = None
+    from flask import flash
     
     if request.method == 'POST':
-        usu = request.form['usuario'].strip()
-        pwd = request.form['password']
+        usu = request.form.get('usuario', '').strip()
+        pwd = request.form.get('password', '').strip()
         rol = request.form.get('rol', 'tecnico')
+        
+        # Validaciones
+        if not usu or not pwd:
+            flash('Usuario y contraseña son obligatorios', 'error')
+            return render_template(
+                'nuevo_usuario.html',
+                usuario=session['usuario'],
+                rol=session['rol']
+            )
+        
+        if len(pwd) < 6:
+            flash('La contraseña debe tener al menos 6 caracteres', 'error')
+            return render_template(
+                'nuevo_usuario.html',
+                usuario=session['usuario'],
+                rol=session['rol']
+            )
         
         try:
             conn = get_db()
@@ -47,13 +64,18 @@ def nuevo_usuario():
                 (usu, generate_password_hash(pwd), rol)
             )
             conn.commit()
+            flash(f'Usuario "{usu}" creado exitosamente', 'success')
             return redirect(url_for('usuarios.index'))
-        except Exception:
-            error = "El nombre de usuario ya existe."
+        except Exception as e:
+            flash('El nombre de usuario ya existe', 'error')
+            return render_template(
+                'nuevo_usuario.html',
+                usuario=session['usuario'],
+                rol=session['rol']
+            )
     
     return render_template(
         'nuevo_usuario.html',
-        error=error,
         usuario=session['usuario'],
         rol=session['rol']
     )
