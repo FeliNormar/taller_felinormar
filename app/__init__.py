@@ -127,11 +127,6 @@ def create_app(config_name='production'):
                 flash('La contraseña debe tener al menos 6 caracteres', 'error')
                 return render_template('setup.html')
             
-            # Validar que el nombre de usuario no tenga espacios
-            if ' ' in nombre_admin:
-                flash('El nombre de usuario no puede contener espacios', 'error')
-                return render_template('setup.html')
-            
             try:
                 # Verificar que no exista el usuario (por seguridad)
                 existing = conn.execute(
