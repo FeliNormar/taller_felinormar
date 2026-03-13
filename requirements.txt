@@ -3,6 +3,9 @@ Flask>=3.0.0
 Werkzeug>=3.0.0
 gunicorn>=21.2.0
 
+# Generación de ejecutable .exe
+pyinstaller>=6.0.0
+
 # Opcional (si se necesitan en el futuro)
 # python-dotenv>=1.0.0  # Para cargar .env
 # qrcode>=7.4.2  # Si se genera QR en backend
