@@ -173,38 +173,30 @@ def create_app(config_name='production'):
     def check_setup():
         """
         Middleware que verifica si el sistema necesita configuración inicial.
-        
-        Si la tabla usuarios está vacía, redirige obligatoriamente a /setup.
-        Esto asegura que el sistema no pueda usarse sin configuración inicial.
+        Solo redirige a /setup si la tabla usuarios está vacía.
         """
-        # Rutas que no requieren verificación
-        excluded_routes = ['setup', 'static', 'auth.login', 'auth.logout', 'ordenes.status_publico']
-        
-        # No verificar rutas excluidas
+        # Rutas que nunca requieren verificación
+        excluded_routes = {
+            'setup', 'static', 'auth.login', 'auth.logout',
+            'ordenes.status_publico'
+        }
+
         if request.endpoint in excluded_routes or request.endpoint is None:
             return None
-        
-        # No verificar archivos estáticos
+
         if request.path.startswith('/static/'):
             return None
-        
-        # Verificar si hay usuarios en la BD
+
+        # Verificar si hay usuarios — si falla, no interrumpir
         try:
             conn = get_db()
-            usuarios = conn.execute("SELECT COUNT(*) as count FROM usuarios").fetchone()
-            
-            if usuarios and usuarios['count'] == 0:
-                # No hay usuarios, redirigir a setup
+            count = conn.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
+            if count == 0:
                 return redirect(url_for('setup'))
         except Exception:
-            # Error al verificar (probablemente tabla no existe)
-            # Intentar crear tablas y redirigir a setup
-            try:
-                init_db()
-                return redirect(url_for('setup'))
-            except:
-                pass
-        
+            # Si la tabla no existe aún, redirigir a setup
+            return redirect(url_for('setup'))
+
         return None
     
     return app
