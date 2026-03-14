@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!--
+  Página pública de consulta de estado de equipo
+  Desarrollado por: Felipe Norberto Marcelino
+  Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estado de Equipo — Taller Felinormar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0d0f13;
+      --surface: #14171e;
+      --panel:   #1c2030;
+      --border:  #252a38;
+      --blue:    #00AEEF;
+      --green:   #2ecc71;
+      --yellow:  #f39c12;
+      --purple:  #a855f7;
+      --red:     #e74c3c;
+      --text:    #e8ecf4;
+      --muted:   #7a8299;
+      --radius:  12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    /* Header */
+    .brand {
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: 2rem; padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-dot {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), #0098D1);
+      display: grid; place-items: center;
+      box-shadow: 0 0 16px rgba(0,174,239,.3);
+    }
+    .brand-dot svg { width: 18px; height: 18px; fill: #fff; }
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1rem; color: var(--blue);
+    }
+    .brand-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem; color: var(--muted);
+      letter-spacing: .12em; text-transform: uppercase;
+    }
+
+    /* Status badge */
+    .status-wrap {
+      text-align: center; margin-bottom: 2rem;
+    }
+    .status-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: grid; place-items: center;
+      margin: 0 auto 1rem; font-size: 1.8rem;
+    }
+    .status-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem; font-weight: 800;
+    }
+    .status-hint {
+      font-size: .82rem; color: var(--muted); margin-top: .3rem;
+    }
+
+    /* Estatus colors */
+    .s-recibido   .status-icon { background: rgba(0,174,239,.15); border: 2px solid rgba(0,174,239,.4); }
+    .s-recibido   .status-label { color: var(--blue); }
+    .s-proceso    .status-icon { background: rgba(243,156,18,.12); border: 2px solid rgba(243,156,18,.4); }
+    .s-proceso    .status-label { color: var(--yellow); }
+    .s-listo      .status-icon { background: rgba(46,204,113,.12); border: 2px solid rgba(46,204,113,.4); }
+    .s-listo      .status-label { color: var(--green); }
+    .s-entregado  .status-icon { background: rgba(168,85,247,.12); border: 2px solid rgba(168,85,247,.4); }
+    .s-entregado  .status-label { color: var(--purple); }
+    .s-error      .status-icon { background: rgba(231,76,60,.12); border: 2px solid rgba(231,76,60,.4); }
+    .s-error      .status-label { color: var(--red); }
+
+    /* Progress bar */
+    .progress-wrap { margin-bottom: 2rem; }
+    .progress-steps {
+      display: flex; justify-content: space-between;
+      position: relative; margin-bottom: .5rem;
+    }
+    .progress-steps::before {
+      content: '';
+      position: absolute; top: 14px; left: 14px; right: 14px;
+      height: 2px; background: var(--border); z-index: 0;
+    }
+    .progress-fill {
+      position: absolute; top: 14px; left: 14px;
+      height: 2px; background: var(--blue);
+      z-index: 1; transition: width .4s ease;
+    }
+    .step-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--panel); border: 2px solid var(--border);
+      display: grid; place-items: center;
+      font-size: .7rem; font-weight: 700; color: var(--muted);
+      position: relative; z-index: 2;
+      transition: all .3s;
+    }
+    .step-dot.done  { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .step-dot.active { background: var(--panel); border-color: var(--blue); color: var(--blue); box-shadow: 0 0 0 4px rgba(0,174,239,.15); }
+    .step-labels {
+      display: flex; justify-content: space-between;
+    }
+    .step-lbl {
+      font-family: 'DM Mono', monospace;
+      font-size: .6rem; color: var(--muted);
+      text-align: center; width: 28px;
+      white-space: nowrap; overflow: visible;
+      transform: translateX(-50%); margin-left: 14px;
+    }
+    .step-lbl:first-child { transform: none; margin-left: 0; }
+    .step-lbl:last-child  { transform: translateX(-100%); margin-left: 0; }
+
+    /* Info rows */
+    .info-block {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .88rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { color: var(--muted); }
+    .info-val {
+      font-weight: 600; color: var(--text);
+      font-family: 'DM Mono', monospace; font-size: .82rem;
+      text-align: right;
+    }
+    .folio-val { color: var(--blue); }
+
+    /* Alert listo */
+    .alert-listo {
+      background: rgba(46,204,113,.08);
+      border: 1px solid rgba(46,204,113,.3);
+      border-radius: 10px; padding: 1rem;
+      font-size: .88rem; color: var(--green);
+      margin-bottom: 1.5rem; text-align: center;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    .card-footer {
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem; color: var(--muted);
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Not found */
+    .not-found { text-align: center; }
+    .not-found .nf-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .not-found h2 { font-family: 'Syne', sans-serif; font-size: 1.2rem; margin-bottom: .5rem; }
+    .not-found p { color: var(--muted); font-size: .88rem; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Brand header -->
+  <div class="brand">
+    <div class="brand-dot">
+      <svg viewBox="0 0 24 24"><path d="M17 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-5 17a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm5-4H7V5h10v10z"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">Taller Felinormar</div>
+      <div class="brand-sub">Consulta de estado de equipo</div>
+    </div>
+  </div>
+
+  {% if orden %}
+
+    {# ── Determinar clase y datos del estatus ── #}
+    {% if orden.estatus == 'Recibido' %}
+      {% set s_class = 's-recibido' %}
+      {% set s_icon  = '📥' %}
+      {% set s_hint  = 'Tu equipo fue recibido y está en espera de diagnóstico.' %}
+      {% set s_step  = 1 %}
+    {% elif orden.estatus == 'En Proceso' %}
+      {% set s_class = 's-proceso' %}
+      {% set s_icon  = '🔧' %}
+      {% set s_hint  = 'Estamos trabajando en tu equipo ahora mismo.' %}
+      {% set s_step  = 2 %}
+    {% elif orden.estatus == 'Listo' %}
+      {% set s_class = 's-listo' %}
+      {% set s_icon  = '✅' %}
+      {% set s_hint  = 'Tu equipo está listo. Puedes pasar a recogerlo.' %}
+      {% set s_step  = 3 %}
+    {% else %}
+      {% set s_class = 's-entregado' %}
+      {% set s_icon  = '📦' %}
+      {% set s_hint  = 'Equipo entregado. ¡Gracias por tu preferencia!' %}
+      {% set s_step  = 4 %}
+    {% endif %}
+
+    <!-- Status principal -->
+    <div class="status-wrap {{ s_class }}">
+      <div class="status-icon">{{ s_icon }}</div>
+      <div class="status-label">{{ orden.estatus }}</div>
+      <div class="status-hint">{{ s_hint }}</div>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div class="progress-wrap">
+      <div class="progress-steps">
+        {% set fill_pct = [(s_step - 1) * 33.3, 0] | max %}
+        <div class="progress-fill" style="width: calc({{ fill_pct }}% )"></div>
+        {% for i in [1,2,3,4] %}
+          <div class="step-dot {% if i < s_step %}done{% elif i == s_step %}active{% endif %}">
+            {% if i < s_step %}✓{% else %}{{ i }}{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="step-labels">
+        <span class="step-lbl">Recibido</span>
+        <span class="step-lbl">Proceso</span>
+        <span class="step-lbl">Listo</span>
+        <span class="step-lbl">Entregado</span>
+      </div>
+    </div>
+
+    <!-- Info del equipo -->
+    <div class="info-block">
+      <div class="info-row">
+        <span class="info-key">Folio</span>
+        <span class="info-val folio-val">{{ orden.folio }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Cliente</span>
+        <span class="info-val">{{ orden.nombre_cliente }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Equipo</span>
+        <span class="info-val">{{ orden.marca }} {{ orden.modelo }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Ingreso</span>
+        <span class="info-val">{{ orden.fecha_ingreso }}</span>
+      </div>
+      {% if orden.fecha_entrega %}
+      <div class="info-row">
+        <span class="info-key">Entregado</span>
+        <span class="info-val">{{ orden.fecha_entrega }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if orden.estatus == 'Listo' %}
+    <div class="alert-listo">
+      📍 Pasa a recoger tu equipo en<br>
+      <strong>Nuevo Ixcatlán, 3ra sección, Veracruz</strong><br>
+      <small>Lun–Sáb · 9:00 am – 7:00 pm</small>
+    </div>
+    {% endif %}
+
+  {% else %}
+
+    <!-- Folio no encontrado -->
+    <div class="not-found">
+      <div class="nf-icon">🔍</div>
+      <h2>Folio no encontrado</h2>
+      <p>No existe ninguna orden con el folio <strong>{{ folio }}</strong>.<br>
+         Verifica el código QR o contacta al taller.</p>
+    </div>
+
+  {% endif %}
+
+  <div class="card-footer">
+    © 2026 Felipe Norberto Marcelino · Taller Felinormar<br>
+    Nuevo Ixcatlán, Veracruz · +52 283 115 6502
+  </div>
+
+</div>
+
+</body>
+</html>

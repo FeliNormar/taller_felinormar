@@ -150,11 +150,7 @@ def detalle_orden(folio):
     if orden['estatus'] == 'Entregado' and orden['fecha_entrega']:
         garantia = f"Su garantía de 30 días inicia a partir del {orden['fecha_entrega']}."
 
-    qr_data = (
-        f"Taller Felinormar | Folio: {folio} | "
-        f"Cliente: {orden['nombre_cliente']} | "
-        f"Equipo: {orden['marca']} {orden['modelo']}"
-    )
+    qr_data = url_for('ordenes.status_publico', folio=folio, _external=True)
 
     return render_template(
         'detalle_orden.html',
@@ -234,3 +230,18 @@ def editar_orden(folio):
         usuario=session['usuario'],
         rol=session['rol']
     )
+
+
+@ordenes_bp.route('/status/<folio>')
+def status_publico(folio):
+    """Página pública de consulta de estado — sin login requerido"""
+    conn = get_db()
+    orden = conn.execute('''
+        SELECT o.folio, o.estatus, o.marca, o.modelo,
+               o.fecha_ingreso, o.fecha_entrega, o.problema,
+               c.nombre AS nombre_cliente
+        FROM ordenes o
+        LEFT JOIN clientes c ON o.id_cliente = c.id
+        WHERE o.folio = ?
+    ''', (folio,)).fetchone()
+    return render_template('status_publico.html', orden=orden, folio=folio)
