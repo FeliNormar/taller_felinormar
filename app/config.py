@@ -5,32 +5,48 @@ Desarrollado por: Felipe Norberto Marcelino
 Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 import os
+from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
-
-# Crear carpeta instance si no existe
 os.makedirs(INSTANCE_DIR, exist_ok=True)
 
 
 class BaseConfig:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-felinormar-2026-cambiar-en-produccion')
-    DATABASE_PATH = os.path.join(INSTANCE_DIR, 'taller_felinormar.db')
-    PERMANENT_SESSION_LIFETIME = 86400  # 24 horas
+    # ── Sesión ────────────────────────────────────────────────
+    SECRET_KEY = os.environ.get('SECRET_KEY')  # OBLIGATORIO en producción
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
+    SESSION_COOKIE_HTTPONLY  = True   # JS no puede leer la cookie
+    SESSION_COOKIE_SAMESITE  = 'Lax' # Protección CSRF básica
+    SESSION_COOKIE_SECURE    = False  # Se sobreescribe en Producción
+
+    # ── Base de datos ─────────────────────────────────────────
+    DATABASE_PATH = os.environ.get(
+        'DATABASE_PATH',
+        os.path.join(INSTANCE_DIR, 'taller_felinormar.db')
+    )
+
+    # ── Uploads ───────────────────────────────────────────────
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB máximo por archivo
 
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     TESTING = False
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-only-key-no-usar-en-produccion')
+    SESSION_COOKIE_SECURE = False
 
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
     TESTING = False
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'prod-key-felinormar-2026-cambiar-en-produccion')
+    SESSION_COOKIE_SECURE = True   # Solo HTTPS
+    # SECRET_KEY DEBE venir de variable de entorno — sin fallback
+    SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 class TestingConfig(BaseConfig):
     DEBUG = True
     TESTING = True
+    SECRET_KEY = 'test-key'
     DATABASE_PATH = os.path.join(INSTANCE_DIR, 'test.db')

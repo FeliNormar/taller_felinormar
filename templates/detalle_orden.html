@@ -167,8 +167,10 @@
 
 {% block scripts %}
 <script>
-  // Generate QR code
-  const qrData = {{ qr_data | tojson }};
+  // Generar QR con la IP real del host actual (funciona en red local y producción)
+  const folio = {{ orden.folio | tojson }};
+  const qrData = window.location.protocol + '//' + window.location.host + '/status/' + folio;
+
   new QRCode(document.getElementById('qrcode'), {
     text: qrData,
     width: 180,
