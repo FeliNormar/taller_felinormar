@@ -178,7 +178,7 @@ def create_app(config_name='production'):
         Esto asegura que el sistema no pueda usarse sin configuración inicial.
         """
         # Rutas que no requieren verificación
-        excluded_routes = ['setup', 'static', 'auth.login', 'auth.logout']
+        excluded_routes = ['setup', 'static', 'auth.login', 'auth.logout', 'ordenes.status_publico']
         
         # No verificar rutas excluidas
         if request.endpoint in excluded_routes or request.endpoint is None:

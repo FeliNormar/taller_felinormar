@@ -14,7 +14,10 @@ import sqlite3
 import os
 from werkzeug.security import generate_password_hash
 
-DB_PATH = 'taller_felinormar.db'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+DB_PATH = os.path.join(INSTANCE_DIR, 'taller_felinormar.db')
 
 def column_exists(conn, table, column):
     rows = conn.execute(f"PRAGMA table_info({table})").fetchall()
