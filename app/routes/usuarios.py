@@ -92,3 +92,35 @@ def eliminar_usuario(uid):
     )
     conn.commit()
     return redirect(url_for('usuarios.index'))
+
+
+@usuarios_bp.route('/cambiar-password/<int:uid>', methods=['POST'])
+@admin_required
+def cambiar_password(uid):
+    """Cambiar contraseña de un usuario"""
+    from flask import flash
+    from werkzeug.security import generate_password_hash
+
+    nueva = request.form.get('nueva_password', '').strip()
+    confirmar = request.form.get('confirmar_password', '').strip()
+
+    if not nueva or not confirmar:
+        flash('Todos los campos son obligatorios', 'error')
+        return redirect(url_for('usuarios.index'))
+
+    if len(nueva) < 6:
+        flash('La contraseña debe tener al menos 6 caracteres', 'error')
+        return redirect(url_for('usuarios.index'))
+
+    if nueva != confirmar:
+        flash('Las contraseñas no coinciden', 'error')
+        return redirect(url_for('usuarios.index'))
+
+    conn = get_db()
+    conn.execute(
+        "UPDATE usuarios SET password=? WHERE id=?",
+        (generate_password_hash(nueva), uid)
+    )
+    conn.commit()
+    flash('Contraseña actualizada correctamente', 'success')
+    return redirect(url_for('usuarios.index'))

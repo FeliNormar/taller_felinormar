@@ -49,12 +49,17 @@
             {% endif %}
           </td>
           <td>
-            {% if u.usuario != 'admin' %}
-            <form method="POST" action="/eliminar_usuario/{{ u.id }}"
-              onsubmit="return confirm('¿Eliminar usuario {{ u.usuario }}?')">
-              <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-            </form>
-            {% endif %}
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <!-- Botón cambiar contraseña -->
+              <button onclick="abrirModal({{ u.id }}, '{{ u.usuario }}')"
+                class="btn btn-outline btn-sm">🔑 Contraseña</button>
+              {% if u.usuario != 'admin' %}
+              <form method="POST" action="/usuarios/eliminar/{{ u.id }}"
+                onsubmit="return confirm('¿Eliminar usuario {{ u.usuario }}?')">
+                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+              </form>
+              {% endif %}
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -62,4 +67,67 @@
     </table>
   </div>
 </div>
+
+<!-- MODAL CAMBIAR CONTRASEÑA -->
+<div id="modal-pwd" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6);
+  z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#14171e; border:1px solid #252a38; border-radius:14px;
+    padding:2rem; width:100%; max-width:400px; margin:1rem;">
+    <h3 style="font-family:'Syne',sans-serif; font-size:1.1rem; margin-bottom:1.5rem;">
+      🔑 Cambiar contraseña — <span id="modal-usuario" style="color:#00AEEF"></span>
+    </h3>
+    <form method="POST" id="form-pwd">
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:11px; color:#7a8299; margin-bottom:6px;">
+          NUEVA CONTRASEÑA
+        </label>
+        <input type="password" name="nueva_password" required minlength="6"
+          placeholder="Mínimo 6 caracteres"
+          style="width:100%; background:#1c2030; border:1px solid #252a38; border-radius:8px;
+            color:#e8ecf4; padding:10px 14px; font-size:14px; font-family:inherit; outline:none;">
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label style="display:block; font-size:11px; color:#7a8299; margin-bottom:6px;">
+          CONFIRMAR CONTRASEÑA
+        </label>
+        <input type="password" name="confirmar_password" required minlength="6"
+          placeholder="Repite la contraseña"
+          style="width:100%; background:#1c2030; border:1px solid #252a38; border-radius:8px;
+            color:#e8ecf4; padding:10px 14px; font-size:14px; font-family:inherit; outline:none;">
+      </div>
+      <div style="display:flex; gap:.75rem;">
+        <button type="submit"
+          style="flex:1; padding:10px; background:#00AEEF; color:#fff; border:none;
+            border-radius:8px; font-weight:700; cursor:pointer; font-family:'Syne',sans-serif;">
+          Guardar
+        </button>
+        <button type="button" onclick="cerrarModal()"
+          style="flex:1; padding:10px; background:transparent; color:#7a8299;
+            border:1px solid #252a38; border-radius:8px; cursor:pointer;">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function abrirModal(uid, nombre) {
+    document.getElementById('modal-usuario').textContent = nombre;
+    document.getElementById('form-pwd').action = '/usuarios/cambiar-password/' + uid;
+    const modal = document.getElementById('modal-pwd');
+    modal.style.display = 'flex';
+  }
+  function cerrarModal() {
+    document.getElementById('modal-pwd').style.display = 'none';
+    document.getElementById('form-pwd').reset();
+  }
+  // Cerrar al hacer clic fuera del modal
+  document.getElementById('modal-pwd').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+  });
+</script>
 {% endblock %}
