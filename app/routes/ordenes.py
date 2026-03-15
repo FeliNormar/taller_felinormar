@@ -4,11 +4,18 @@ Rutas para gestión de órdenes de servicio
 Desarrollado por: Felipe Norberto Marcelino
 Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
-from flask import Blueprint, render_template, request, redirect, session, url_for
+from flask import Blueprint, render_template, request, redirect, session, url_for, jsonify
 from datetime import date
+import os, uuid
+from werkzeug.utils import secure_filename
 from app.models.database import get_db
 from app.utils.decorators import login_required
 from app.utils.helpers import generar_folio, whatsapp_link
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
+
+def _allowed(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 ordenes_bp = Blueprint('ordenes', __name__)
 
@@ -138,6 +145,10 @@ def detalle_orden(folio):
     if not orden:
         return redirect(url_for('ordenes.index'))
 
+    evidencias = conn.execute(
+        "SELECT * FROM evidencias WHERE folio=? ORDER BY id ASC", (folio,)
+    ).fetchall()
+
     wa_link = None
     garantia = None
     
@@ -155,6 +166,7 @@ def detalle_orden(folio):
     return render_template(
         'detalle_orden.html',
         orden=orden,
+        evidencias=evidencias,
         wa_link=wa_link,
         garantia=garantia,
         qr_data=qr_data,
@@ -244,4 +256,55 @@ def status_publico(folio):
         LEFT JOIN clientes c ON o.id_cliente = c.id
         WHERE o.folio = ?
     ''', (folio,)).fetchone()
-    return render_template('status_publico.html', orden=orden, folio=folio)
+    evidencias = []
+    if orden:
+        evidencias = conn.execute(
+            "SELECT * FROM evidencias WHERE folio=? ORDER BY id ASC", (folio,)
+        ).fetchall()
+    return render_template('status_publico.html', orden=orden, folio=folio, evidencias=evidencias)
+
+
+@ordenes_bp.route('/orden/<folio>/evidencia', methods=['POST'])
+@login_required
+def subir_evidencia(folio):
+    """Subir foto de evidencia para una orden"""
+    from flask import current_app
+    conn = get_db()
+    orden = conn.execute("SELECT folio FROM ordenes WHERE folio=?", (folio,)).fetchone()
+    if not orden:
+        return jsonify({'error': 'Orden no encontrada'}), 404
+
+    file = request.files.get('foto')
+    if not file or not _allowed(file.filename):
+        return jsonify({'error': 'Archivo inválido'}), 400
+
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"{folio}_{uuid.uuid4().hex[:8]}.{ext}"
+    upload_dir = os.path.join(current_app.static_folder, 'uploads')
+    os.makedirs(upload_dir, exist_ok=True)
+    file.save(os.path.join(upload_dir, filename))
+
+    conn.execute(
+        "INSERT INTO evidencias (folio, filename, fecha) VALUES (?,?,?)",
+        (folio, filename, date.today().isoformat())
+    )
+    conn.commit()
+    return jsonify({'ok': True, 'filename': filename})
+
+
+@ordenes_bp.route('/orden/<folio>/evidencia/<int:eid>', methods=['POST'])
+@login_required
+def eliminar_evidencia(folio, eid):
+    """Eliminar una foto de evidencia"""
+    from flask import current_app
+    conn = get_db()
+    ev = conn.execute(
+        "SELECT filename FROM evidencias WHERE id=? AND folio=?", (eid, folio)
+    ).fetchone()
+    if ev:
+        path = os.path.join(current_app.static_folder, 'uploads', ev['filename'])
+        if os.path.exists(path):
+            os.remove(path)
+        conn.execute("DELETE FROM evidencias WHERE id=?", (eid,))
+        conn.commit()
+    return redirect(url_for('ordenes.detalle_orden', folio=folio))

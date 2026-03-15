@@ -85,6 +85,17 @@ def init_db():
         )
     ''')
 
+    # Tabla de evidencias fotográficas
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS evidencias (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            folio    TEXT NOT NULL,
+            filename TEXT NOT NULL,
+            fecha    TEXT NOT NULL,
+            FOREIGN KEY (folio) REFERENCES ordenes(folio)
+        )
+    ''')
+
     # NO crear usuario admin por defecto
     # El usuario se crea en la instalación inicial (/setup)
 
