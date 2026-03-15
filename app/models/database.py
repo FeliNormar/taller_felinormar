@@ -49,6 +49,15 @@ def init_db():
     except Exception:
         pass  # Ya existe
 
+    # Migración: si el admin no tiene email, tomarlo de variable de entorno
+    import os
+    admin_email = os.environ.get('ADMIN_EMAIL')
+    if admin_email:
+        c.execute(
+            "UPDATE usuarios SET email=? WHERE rol='admin' AND (email IS NULL OR email='')",
+            (admin_email,)
+        )
+
     # Tabla de tokens para recuperación de contraseña
     c.execute('''
         CREATE TABLE IF NOT EXISTS reset_tokens (
