@@ -29,6 +29,13 @@ class BaseConfig:
     # ── Uploads ───────────────────────────────────────────────
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB máximo por archivo
 
+    # ── Email (recuperación de contraseña) ────────────────────
+    MAIL_SERVER   = 'smtp.gmail.com'
+    MAIL_PORT     = 587
+    MAIL_USE_TLS  = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # App password de Gmail
+
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True

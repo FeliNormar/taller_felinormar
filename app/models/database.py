@@ -39,7 +39,25 @@ def init_db():
             id       INTEGER PRIMARY KEY AUTOINCREMENT,
             usuario  TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            rol      TEXT NOT NULL DEFAULT 'tecnico'
+            rol      TEXT NOT NULL DEFAULT 'tecnico',
+            email    TEXT
+        )
+    ''')
+    # Agregar columna email si no existe (migración para BD existentes)
+    try:
+        c.execute("ALTER TABLE usuarios ADD COLUMN email TEXT")
+    except Exception:
+        pass  # Ya existe
+
+    # Tabla de tokens para recuperación de contraseña
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS reset_tokens (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER NOT NULL,
+            token      TEXT UNIQUE NOT NULL,
+            expira     TEXT NOT NULL,
+            usado      INTEGER NOT NULL DEFAULT 0,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
         )
     ''')
 

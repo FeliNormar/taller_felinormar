@@ -99,6 +99,7 @@ def create_app(config_name='production'):
             nombre_admin = request.form.get('nombre_admin', '').strip()
             password = request.form.get('password', '').strip()
             password_confirm = request.form.get('password_confirm', '').strip()
+            email_admin = request.form.get('email_admin', '').strip().lower()
             
             # ============================================================
             # VALIDACIONES PROFESIONALES
@@ -140,8 +141,8 @@ def create_app(config_name='production'):
                 
                 # Crear usuario administrador con contraseña encriptada
                 conn.execute(
-                    "INSERT INTO usuarios (usuario, password, rol) VALUES (?, ?, ?)",
-                    (nombre_admin, generate_password_hash(password), 'admin')
+                    "INSERT INTO usuarios (usuario, password, rol, email) VALUES (?, ?, ?, ?)",
+                    (nombre_admin, generate_password_hash(password), 'admin', email_admin)
                 )
                 
                 # Crear configuración del taller (si existe la tabla - versión PRO)
@@ -192,6 +193,7 @@ def create_app(config_name='production'):
         # Rutas que nunca requieren verificación
         excluded_routes = {
             'setup', 'static', 'auth.login', 'auth.logout',
+            'auth.forgot_password', 'auth.reset_password',
             'ordenes.status_publico'
         }
 
