@@ -132,10 +132,13 @@ def forgot_password():
             link = url_for('auth.reset_password', token=token, _external=True)
             try:
                 _enviar_email_reset(email, link)
+                current_app.logger.warning(f"EMAIL ENVIADO OK a {email}")
             except Exception as e:
-                current_app.logger.error(f"Error enviando email: {e}")
-                flash('Error al enviar el correo. Verifica la configuración.', 'error')
+                current_app.logger.warning(f"EMAIL ERROR: {type(e).__name__}: {e}")
+                flash(f'Error al enviar el correo: {e}', 'error')
                 return render_template('forgot_password.html')
+        else:
+            current_app.logger.warning(f"EMAIL NO ENCONTRADO en BD: {email}")
 
         flash('Si ese correo está registrado, recibirás un enlace en breve.', 'success')
         return redirect(url_for('auth.login'))
