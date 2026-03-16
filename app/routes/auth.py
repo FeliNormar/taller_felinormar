@@ -98,7 +98,7 @@ def _enviar_email_reset(destino, link):
     """
     payload = json.dumps({
         "from": "Taller Felinormar <onboarding@resend.dev>",
-        "to": [destino],
+        "to": ["isc20350300@gmail.com"],
         "subject": "Recuperación de contraseña — Taller Felinormar",
         "html": html
     }).encode('utf-8')
@@ -112,8 +112,12 @@ def _enviar_email_reset(destino, link):
         },
         method='POST'
     )
-    with urllib.request.urlopen(req) as resp:
-        return resp.read()
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8')
+        raise Exception(f"Resend {e.code}: {body}")
 
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
