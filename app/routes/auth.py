@@ -7,7 +7,7 @@ Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 from flask import Blueprint, render_template, request, redirect, session, url_for, flash, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 from app.models.database import get_db
-import secrets, smtplib
+import secrets, urllib.request, urllib.error, json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
@@ -78,13 +78,8 @@ def logout():
 
 
 def _enviar_email_reset(destino, link):
-    """Envía el correo de recuperación usando Gmail SMTP"""
-    cfg = current_app.config
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = 'Recuperación de contraseña — Taller Felinormar'
-    msg['From']    = cfg['MAIL_USERNAME']
-    msg['To']      = destino
-
+    """Envía el correo de recuperación usando Resend API"""
+    api_key = current_app.config.get('RESEND_API_KEY')
     html = f"""
     <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#0d0f13;color:#e8ecf4;border-radius:12px;padding:32px;border:1px solid #252a38;">
       <h2 style="color:#00AEEF;font-size:22px;margin-bottom:8px;">🔧 Taller Felinormar</h2>
@@ -101,12 +96,24 @@ def _enviar_email_reset(destino, link):
       <p style="font-size:11px;color:#3a3f52;">© 2026 Felipe Norberto Marcelino · Taller Felinormar</p>
     </div>
     """
-    msg.attach(MIMEText(html, 'html'))
+    payload = json.dumps({
+        "from": "Taller Felinormar <onboarding@resend.dev>",
+        "to": [destino],
+        "subject": "Recuperación de contraseña — Taller Felinormar",
+        "html": html
+    }).encode('utf-8')
 
-    with smtplib.SMTP(cfg['MAIL_SERVER'], cfg['MAIL_PORT']) as server:
-        server.starttls()
-        server.login(cfg['MAIL_USERNAME'], cfg['MAIL_PASSWORD'])
-        server.sendmail(cfg['MAIL_USERNAME'], destino, msg.as_string())
+    req = urllib.request.Request(
+        'https://api.resend.com/emails',
+        data=payload,
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        },
+        method='POST'
+    )
+    with urllib.request.urlopen(req) as resp:
+        return resp.read()
 
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
