@@ -4,10 +4,10 @@ Rutas para dashboard analítico
 Desarrollado por: Felipe Norberto Marcelino
 Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
-from flask import Blueprint, render_template, request, session, jsonify
+from flask import Blueprint, render_template, request, session, jsonify, flash, redirect, url_for
 from datetime import date, timedelta
 from app.models.database import get_db
-from app.utils.decorators import login_required
+from app.utils.decorators import login_required, admin_required
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -102,3 +102,43 @@ def api_dashboard():
             'pendientes': totales['pendientes'] or 0,
         }
     })
+
+
+@dashboard_bp.route('/configuracion', methods=['GET', 'POST'])
+@admin_required
+def configuracion():
+    """Editar datos del taller"""
+    conn = get_db()
+    cfg = conn.execute("SELECT * FROM configuracion WHERE id=1").fetchone()
+
+    if request.method == 'POST':
+        nombre_taller      = request.form.get('nombre_taller', '').strip()
+        nombre_propietario = request.form.get('nombre_propietario', '').strip()
+        email              = request.form.get('email', '').strip()
+        telefono           = request.form.get('telefono', '').strip()
+        calle              = request.form.get('calle', '').strip()
+        colonia            = request.form.get('colonia', '').strip()
+        municipio          = request.form.get('municipio', '').strip()
+        estado             = request.form.get('estado', '').strip()
+        cp                 = request.form.get('cp', '').strip()
+
+        if not all([nombre_taller, nombre_propietario, calle, municipio, estado, cp]):
+            flash('Completa todos los campos obligatorios.', 'error')
+        else:
+            conn.execute('''
+                INSERT OR REPLACE INTO configuracion
+                (id, nombre_taller, nombre_propietario, email, telefono,
+                 calle, colonia, municipio, estado, cp, completado)
+                VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            ''', (nombre_taller, nombre_propietario, email, telefono,
+                  calle, colonia, municipio, estado, cp))
+            conn.commit()
+            flash('Datos del taller actualizados.', 'success')
+            return redirect(url_for('dashboard.configuracion'))
+
+    return render_template(
+        'configuracion.html',
+        cfg=cfg,
+        usuario=session['usuario'],
+        rol=session['rol']
+    )
