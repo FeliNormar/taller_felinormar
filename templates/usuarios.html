@@ -4,7 +4,7 @@
 {% block page_title %}Gestión de Usuarios{% endblock %}
 
 {% block topbar_actions %}
-  <a href="/nuevo_usuario" class="btn btn-primary">+ Nuevo Usuario</a>
+  <a href="{{ url_for('usuarios.nuevo_usuario') }}" class="btn btn-primary">+ Nuevo Usuario</a>
 {% endblock %}
 
 {% block content %}
