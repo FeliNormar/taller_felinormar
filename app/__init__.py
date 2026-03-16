@@ -50,7 +50,6 @@ def create_app(config_name='production'):
         try:
             init_db()
         except Exception as e:
-            import sys
             print(f"ERROR init_db: {e}", file=sys.stderr)
             raise
     
