@@ -21,6 +21,8 @@ class BaseConfig:
     SESSION_COOKIE_SECURE    = False  # Se sobreescribe en Producción
 
     # ── Base de datos ─────────────────────────────────────────
+    # PostgreSQL en producción (Render), SQLite en local
+    DATABASE_URL  = os.environ.get('DATABASE_URL', '')
     DATABASE_PATH = os.environ.get(
         'DATABASE_PATH',
         os.path.join(INSTANCE_DIR, 'taller_felinormar.db')

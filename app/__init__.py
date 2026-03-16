@@ -147,11 +147,19 @@ def create_app(config_name='production'):
                 
                 # Crear configuración del taller (si existe la tabla - versión PRO)
                 try:
-                    conn.execute('''
-                        INSERT OR REPLACE INTO configuracion 
-                        (id, nombre_taller, nombre_propietario, ubicacion)
-                        VALUES (1, ?, ?, 'Ubicación del taller')
-                    ''', (nombre_taller, nombre_admin))
+                    from app.models.database import USE_POSTGRES
+                    if USE_POSTGRES:
+                        conn.execute('''
+                            INSERT INTO configuracion (id, nombre_taller, nombre_propietario, email, telefono, calle, colonia, municipio, estado, cp, completado)
+                            VALUES (1, %s, %s, '', '', '', '', '', '', '', 0)
+                            ON CONFLICT (id) DO NOTHING
+                        ''', (nombre_taller, nombre_admin))
+                    else:
+                        conn.execute('''
+                            INSERT OR REPLACE INTO configuracion 
+                            (id, nombre_taller, nombre_propietario, ubicacion)
+                            VALUES (1, ?, ?, 'Ubicación del taller')
+                        ''', (nombre_taller, nombre_admin))
                 except:
                     pass  # Tabla configuracion no existe en versión básica
                 
@@ -195,13 +203,29 @@ def create_app(config_name='production'):
                 flash('Completa todos los campos obligatorios.', 'error')
                 return render_template('onboarding.html')
 
-            conn.execute('''
-                INSERT OR REPLACE INTO configuracion
-                (id, nombre_taller, nombre_propietario, email, telefono,
-                 calle, colonia, municipio, estado, cp, completado)
-                VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-            ''', (nombre_taller, nombre_propietario, email, telefono,
-                  calle, colonia, municipio, estado, cp))
+            from app.models.database import USE_POSTGRES
+            if USE_POSTGRES:
+                conn.execute('''
+                    INSERT INTO configuracion
+                    (id, nombre_taller, nombre_propietario, email, telefono,
+                     calle, colonia, municipio, estado, cp, completado)
+                    VALUES (1, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1)
+                    ON CONFLICT (id) DO UPDATE SET
+                        nombre_taller=%s, nombre_propietario=%s, email=%s,
+                        telefono=%s, calle=%s, colonia=%s, municipio=%s,
+                        estado=%s, cp=%s, completado=1
+                ''', (nombre_taller, nombre_propietario, email, telefono,
+                      calle, colonia, municipio, estado, cp,
+                      nombre_taller, nombre_propietario, email, telefono,
+                      calle, colonia, municipio, estado, cp))
+            else:
+                conn.execute('''
+                    INSERT OR REPLACE INTO configuracion
+                    (id, nombre_taller, nombre_propietario, email, telefono,
+                     calle, colonia, municipio, estado, cp, completado)
+                    VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                ''', (nombre_taller, nombre_propietario, email, telefono,
+                      calle, colonia, municipio, estado, cp))
             conn.commit()
 
             flash('¡Datos del taller guardados! Ya puedes iniciar sesión.', 'success')

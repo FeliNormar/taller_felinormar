@@ -6,7 +6,7 @@ Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 from flask import Blueprint, render_template, request, session, jsonify, flash, redirect, url_for
 from datetime import date, timedelta
-from app.models.database import get_db
+from app.models.database import get_db, USE_POSTGRES
 from app.utils.decorators import login_required, admin_required
 
 dashboard_bp = Blueprint('dashboard', __name__)
@@ -42,28 +42,37 @@ def api_dashboard():
     # Ingresos filtrados por período
     hoy = date.today()
     
+    ph = '%s' if USE_POSTGRES else '?'  # placeholder según motor
+
     if periodo == 'semana':
         lunes = hoy - timedelta(days=hoy.weekday())
         desde = lunes.isoformat()
-        query_fin = '''
+        query_fin = f'''
             SELECT fecha_ingreso as periodo, SUM(costo_total) as ingreso
-            FROM ordenes WHERE fecha_ingreso >= ? AND estatus='Entregado'
+            FROM ordenes WHERE fecha_ingreso >= {ph} AND estatus='Entregado'
             GROUP BY fecha_ingreso ORDER BY fecha_ingreso
         '''
         params = (desde,)
     elif periodo == 'ano':
         desde = f'{hoy.year}-01-01'
-        query_fin = '''
-            SELECT strftime('%m', fecha_ingreso) as periodo, SUM(costo_total) as ingreso
-            FROM ordenes WHERE fecha_ingreso >= ? AND estatus='Entregado'
-            GROUP BY strftime('%m', fecha_ingreso) ORDER BY periodo
-        '''
+        if USE_POSTGRES:
+            query_fin = f'''
+                SELECT TO_CHAR(fecha_ingreso::date, 'MM') as periodo, SUM(costo_total) as ingreso
+                FROM ordenes WHERE fecha_ingreso >= {ph} AND estatus='Entregado'
+                GROUP BY TO_CHAR(fecha_ingreso::date, 'MM') ORDER BY periodo
+            '''
+        else:
+            query_fin = f'''
+                SELECT strftime('%m', fecha_ingreso) as periodo, SUM(costo_total) as ingreso
+                FROM ordenes WHERE fecha_ingreso >= {ph} AND estatus='Entregado'
+                GROUP BY strftime('%m', fecha_ingreso) ORDER BY periodo
+            '''
         params = (desde,)
     else:  # mes
         desde = f'{hoy.year}-{hoy.month:02d}-01'
-        query_fin = '''
+        query_fin = f'''
             SELECT fecha_ingreso as periodo, SUM(costo_total) as ingreso
-            FROM ordenes WHERE fecha_ingreso >= ? AND estatus='Entregado'
+            FROM ordenes WHERE fecha_ingreso >= {ph} AND estatus='Entregado'
             GROUP BY fecha_ingreso ORDER BY fecha_ingreso
         '''
         params = (desde,)
@@ -125,13 +134,29 @@ def configuracion():
         if not all([nombre_taller, nombre_propietario, calle, municipio, estado, cp]):
             flash('Completa todos los campos obligatorios.', 'error')
         else:
-            conn.execute('''
-                INSERT OR REPLACE INTO configuracion
-                (id, nombre_taller, nombre_propietario, email, telefono,
-                 calle, colonia, municipio, estado, cp, completado)
-                VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-            ''', (nombre_taller, nombre_propietario, email, telefono,
-                  calle, colonia, municipio, estado, cp))
+            from app.models.database import USE_POSTGRES
+            if USE_POSTGRES:
+                conn.execute('''
+                    INSERT INTO configuracion
+                    (id, nombre_taller, nombre_propietario, email, telefono,
+                     calle, colonia, municipio, estado, cp, completado)
+                    VALUES (1, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1)
+                    ON CONFLICT (id) DO UPDATE SET
+                        nombre_taller=%s, nombre_propietario=%s, email=%s,
+                        telefono=%s, calle=%s, colonia=%s, municipio=%s,
+                        estado=%s, cp=%s, completado=1
+                ''', (nombre_taller, nombre_propietario, email, telefono,
+                      calle, colonia, municipio, estado, cp,
+                      nombre_taller, nombre_propietario, email, telefono,
+                      calle, colonia, municipio, estado, cp))
+            else:
+                conn.execute('''
+                    INSERT OR REPLACE INTO configuracion
+                    (id, nombre_taller, nombre_propietario, email, telefono,
+                     calle, colonia, municipio, estado, cp, completado)
+                    VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                ''', (nombre_taller, nombre_propietario, email, telefono,
+                      calle, colonia, municipio, estado, cp))
             conn.commit()
             flash('Datos del taller actualizados.', 'success')
             return redirect(url_for('dashboard.configuracion'))
