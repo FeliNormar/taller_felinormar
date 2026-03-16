@@ -36,6 +36,7 @@ class BaseConfig:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')  # App password de Gmail
     RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+    BREVO_API_KEY  = os.environ.get('BREVO_API_KEY')
 
 
 class DevelopmentConfig(BaseConfig):

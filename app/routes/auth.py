@@ -78,8 +78,8 @@ def logout():
 
 
 def _enviar_email_reset(destino, link):
-    """Envía el correo de recuperación usando Resend API"""
-    api_key = current_app.config.get('RESEND_API_KEY')
+    """Envía el correo de recuperación usando Brevo API"""
+    api_key = current_app.config.get('BREVO_API_KEY')
     html = f"""
     <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#0d0f13;color:#e8ecf4;border-radius:12px;padding:32px;border:1px solid #252a38;">
       <h2 style="color:#00AEEF;font-size:22px;margin-bottom:8px;">🔧 Taller Felinormar</h2>
@@ -97,17 +97,17 @@ def _enviar_email_reset(destino, link):
     </div>
     """
     payload = json.dumps({
-        "from": "Taller Felinormar <onboarding@resend.dev>",
-        "to": ["isc20350300@gmail.com"],
+        "sender": {"name": "Taller Felinormar", "email": "isc20350300@gmail.com"},
+        "to": [{"email": destino}],
         "subject": "Recuperación de contraseña — Taller Felinormar",
-        "html": html
+        "htmlContent": html
     }).encode('utf-8')
 
     req = urllib.request.Request(
-        'https://api.resend.com/emails',
+        'https://api.brevo.com/v3/smtp/email',
         data=payload,
         headers={
-            'Authorization': f'Bearer {api_key}',
+            'api-key': api_key,
             'Content-Type': 'application/json'
         },
         method='POST'
@@ -117,7 +117,7 @@ def _enviar_email_reset(destino, link):
             return resp.read()
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8')
-        raise Exception(f"Resend {e.code}: {body}")
+        raise Exception(f"Brevo {e.code}: {body}")
 
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
