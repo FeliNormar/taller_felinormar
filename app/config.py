@@ -27,7 +27,7 @@ class BaseConfig:
     )
 
     # ── Uploads ───────────────────────────────────────────────
-    MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB máximo por archivo
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB máximo por archivo
 
     # ── Email (recuperación de contraseña) ────────────────────
     MAIL_SERVER   = 'smtp.gmail.com'
