@@ -164,8 +164,8 @@ def init_db():
     """Inicializar base de datos con tablas y datos iniciales"""
     db = get_db()
 
-    # ── Tabla usuarios ────────────────────────────────────────
-    db.execute(_ddl('''
+    # ── Crear todas las tablas ────────────────────────────────
+    db.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
             id       SERIAL PRIMARY KEY,
             usuario  TEXT UNIQUE NOT NULL,
@@ -181,26 +181,8 @@ def init_db():
             rol      TEXT NOT NULL DEFAULT 'tecnico',
             email    TEXT
         )
-    '''))
+    ''')
 
-    # Migración: agregar columna email si no existe
-    try:
-        db.execute("ALTER TABLE usuarios ADD COLUMN email TEXT")
-        db.commit()
-    except Exception:
-        if USE_POSTGRES:
-            db._conn.rollback()
-
-    # Sincronizar email del admin desde variable de entorno
-    admin_email = os.environ.get('ADMIN_EMAIL')
-    if admin_email:
-        db.execute(
-            "UPDATE usuarios SET email=%s WHERE rol='admin' AND (email IS NULL OR email='')" if USE_POSTGRES
-            else "UPDATE usuarios SET email=? WHERE rol='admin' AND (email IS NULL OR email='')",
-            (admin_email,)
-        )
-
-    # ── Tabla reset_tokens ────────────────────────────────────
     db.execute('''
         CREATE TABLE IF NOT EXISTS reset_tokens (
             id         SERIAL PRIMARY KEY,
@@ -221,7 +203,6 @@ def init_db():
         )
     ''')
 
-    # ── Tabla reparaciones ────────────────────────────────────
     db.execute('''
         CREATE TABLE IF NOT EXISTS reparaciones (
             id          SERIAL PRIMARY KEY,
@@ -236,7 +217,6 @@ def init_db():
         )
     ''')
 
-    # ── Tabla clientes ────────────────────────────────────────
     db.execute('''
         CREATE TABLE IF NOT EXISTS clientes (
             id       SERIAL PRIMARY KEY,
@@ -251,7 +231,6 @@ def init_db():
         )
     ''')
 
-    # ── Tabla ordenes ─────────────────────────────────────────
     db.execute('''
         CREATE TABLE IF NOT EXISTS ordenes (
             id             SERIAL PRIMARY KEY,
@@ -296,7 +275,6 @@ def init_db():
         )
     ''')
 
-    # ── Tabla evidencias ──────────────────────────────────────
     db.execute('''
         CREATE TABLE IF NOT EXISTS evidencias (
             id       SERIAL PRIMARY KEY,
@@ -315,7 +293,6 @@ def init_db():
         )
     ''')
 
-    # ── Tabla configuracion ───────────────────────────────────
     db.execute('''
         CREATE TABLE IF NOT EXISTS configuracion (
             id                 INTEGER PRIMARY KEY DEFAULT 1,
@@ -332,7 +309,30 @@ def init_db():
         )
     ''')
 
+    # Commit de todas las tablas antes de cualquier DML
     db.commit()
+
+    # Migración: agregar columna email si no existe (BD existentes)
+    try:
+        db.execute("ALTER TABLE usuarios ADD COLUMN email TEXT")
+        db.commit()
+    except Exception:
+        if USE_POSTGRES:
+            db._conn.rollback()
+
+    # Sincronizar email del admin desde variable de entorno
+    admin_email = os.environ.get('ADMIN_EMAIL')
+    if admin_email:
+        try:
+            db.execute(
+                "UPDATE usuarios SET email=%s WHERE rol='admin' AND (email IS NULL OR email='')" if USE_POSTGRES
+                else "UPDATE usuarios SET email=? WHERE rol='admin' AND (email IS NULL OR email='')",
+                (admin_email,)
+            )
+            db.commit()
+        except Exception:
+            if USE_POSTGRES:
+                db._conn.rollback()
 
     # Si ya hay usuarios pero no hay configuración, crear una por defecto
     user_count = db.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
