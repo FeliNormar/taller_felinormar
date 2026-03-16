@@ -1,4 +1,4 @@
-#  Taller Felinormar — Sistema de Gestión v2.0
+#  Taller Felinormar — Sistema de Gestión v2.1
 
 Sistema profesional de gestión para taller de reparación de celulares.  
 **Arquitectura Production-Ready** con Factory Pattern y Blueprints.
@@ -7,12 +7,17 @@ Sistema profesional de gestión para taller de reparación de celulares.
 
 -  Gestión completa de órdenes de servicio
 -  Generación automática de folios (FN-0001, FN-0002...)
-- Dashboard analítico con gráficas (Chart.js)
-   Notificaciones por WhatsApp
-- Códigos QR para equipos
+-  Dashboard analítico con gráficas (Chart.js)
+-  Notificaciones por WhatsApp
+-  Códigos QR para equipos
 -  Sistema de garantías (30 días)
-- Roles de usuario (Admin/Técnico)
-   Catálogo de reparaciones
+-  Roles de usuario (Admin/Técnico)
+-  Catálogo de reparaciones
+-  Evidencia fotográfica por orden (upload + cámara)
+-  Recuperación de contraseña por correo (Brevo API)
+-  Onboarding de datos del taller (se pide una sola vez)
+-  Página de configuración editable desde el sistema
+-  Página pública de estatus para clientes (con fotos y datos del taller)
 
 ---
 
@@ -24,6 +29,7 @@ Sistema profesional de gestión para taller de reparación de celulares.
 - **SQLite 3** - Base de datos embebida
 - **Gunicorn** - Servidor WSGI para producción
 - **Werkzeug** - Seguridad (hash de contraseñas)
+- **Brevo API** - Envío de correos transaccionales
 
 ### Frontend
 - **HTML5 + CSS3** - Estructura y estilos
@@ -39,21 +45,21 @@ Sistema profesional de gestión para taller de reparación de celulares.
 
 ---
 
-##Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 taller_felinormar/
 ├── app/                        # Aplicación principal
-│   ├── __init__.py            # Factory de la aplicación
+│   ├── __init__.py            # Factory de la aplicación + setup/onboarding
 │   ├── config.py              # Configuraciones por entorno
 │   ├── models/
 │   │   └── database.py        # Gestión de BD
 │   ├── routes/                # Blueprints (rutas)
-│   │   ├── auth.py           # Autenticación
-│   │   ├── ordenes.py        # Órdenes de servicio
+│   │   ├── auth.py           # Autenticación + recuperación de contraseña
+│   │   ├── ordenes.py        # Órdenes + evidencia fotográfica
 │   │   ├── usuarios.py       # Gestión de usuarios
 │   │   ├── reparaciones.py   # Catálogo
-│   │   └── dashboard.py      # Analytics
+│   │   └── dashboard.py      # Analytics + configuración del taller
 │   └── utils/                 # Utilidades
 │       ├── decorators.py     # @login_required, @admin_required
 │       └── helpers.py        # Funciones auxiliares
@@ -62,192 +68,124 @@ taller_felinormar/
 │   └── taller_felinormar.db
 │
 ├── static/                     # Archivos estáticos
-│   └── uploads/               # Uploads persistentes
+│   └── uploads/               # Fotos de evidencia (no persistente en Render free)
 │
 ├── templates/                  # Plantillas HTML (Jinja2)
 │   ├── base.html
 │   ├── login.html
+│   ├── setup.html             # Instalación inicial
+│   ├── onboarding.html        # Datos del taller (primer arranque)
+│   ├── configuracion.html     # Editar datos del taller (admin)
+│   ├── forgot_password.html   # Solicitar recuperación de contraseña
+│   ├── reset_password.html    # Nueva contraseña con token
 │   ├── index.html
 │   ├── nueva_orden.html
-│   ├── detalle_orden.html
+│   ├── detalle_orden.html     # Incluye sección de evidencia fotográfica
 │   ├── editar_orden.html
 │   ├── dashboard.html
 │   ├── usuarios.html
 │   ├── nuevo_usuario.html
-│   └── reparaciones.html
+│   ├── reparaciones.html
+│   └── status_publico.html    # Página pública para clientes (con fotos y datos del taller)
 │
 ├── docs/                       # Documentación
-│   ├── DEPLOYMENT.md          # Guía de despliegue
-│   ├── CASOS_DE_USO.md        # Casos de uso
-│   ├── TECNOLOGIAS.md         # Stack técnico
-│   ├── SEGURIDAD.md           # Guía de seguridad
-│   └── INICIO_RAPIDO.md       # Quick start
+│   ├── DEPLOYMENT.md
+│   ├── CASOS_DE_USO.md
+│   ├── TECNOLOGIAS.md
+│   ├── SEGURIDAD.md
+│   └── INICIO_RAPIDO.md
 │
 ├── wsgi.py                    # Entry point WSGI
 ├── Procfile                   # Config para Render/Railway
 ├── runtime.txt                # Versión de Python
 ├── requirements.txt           # Dependencias
 ├── .env.example               # Ejemplo de variables
-└── .gitignore                 # Archivos excluidos
+└── .gitignore
 ```
 
 ---
 
 ## Instalación Rápida
 
-### Opción 1: Instalador para Windows "Recomendado"
+### Opción 1: Instalador para Windows (Recomendado)
 
-**Descarga el instalador:**
 1. Ve a [Releases](https://github.com/FeliNormar/taller_felinormar/releases)
-2. Descarga `TallerFelinormar_v2.0_Setup.exe`
-3. Ejecuta el instalador
-4. Sigue el asistente de instalación
-5. ¡Listo! El sistema se iniciará automáticamente
+2. Descarga `TallerFelinormar_v2.1_Setup.exe`
+3. Ejecuta el instalador y sigue el asistente
+4. El sistema se iniciará automáticamente
 
-**Requisitos:**
-- Windows 10 o superior
-- Python 3.11+ (el instalador lo verificará)
+**Requisitos:** Windows 10 o superior, Python 3.11+
 
 ### Opción 2: Instalación Manual
 
-#### 1. Clonar el Repositorio
 ```bash
-git clone <tu-repo-url>
+git clone https://github.com/FeliNormar/taller_felinormar
 cd taller_felinormar
-```
 
-### 2. Crear Entorno Virtual
-```bash
 python -m venv venv
-source venv/bin/activate        # Linux/Mac
-venv\Scripts\activate           # Windows
-```
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # Linux/Mac
 
-### 3. Instalar Dependencias
-```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configurar Variables de Entorno
+Configurar variables de entorno (ver sección abajo) y luego:
+
 ```bash
-# Copiar ejemplo
-cp .env.example .env
-
-# Generar SECRET_KEY
-python -c "import secrets; print(secrets.token_hex(32))"
-
-# Editar .env y pegar la clave generada
-```
-
-### 5. Iniciar en Desarrollo
-```bash
-export FLASK_ENV=development  # Linux/Mac
-set FLASK_ENV=development     # Windows
-
+set FLASK_ENV=development      # Windows
 python wsgi.py
 ```
 
 Accede a: **http://localhost:5000**
 
-**Credenciales por defecto:**
-- Usuario: `admin`
-- Contraseña: `admin123`
-
- **Cambia la contraseña en producción**
+Al primer arranque se mostrará el asistente de configuración.
 
 ---
 
-##  Despliegue a Producción
+## Variables de Entorno
 
-### Plataformas Soportadas
--  **Render** (Recomendado - Free tier disponible)
-- **Railway** (Fácil despliegue)
--  **VPS** (Ubuntu/Debian con Nginx)
--  **Heroku** (Con Procfile incluido)
+| Variable | Descripción | Requerida |
+|----------|-------------|-----------|
+| `SECRET_KEY` | Clave secreta de Flask | Sí (producción) |
+| `FLASK_ENV` | `development` o `production` | Sí |
+| `ADMIN_EMAIL` | Email del administrador (para recuperación de contraseña) | Sí |
+| `BREVO_API_KEY` | API Key de Brevo para envío de correos | Sí (si usas recuperación de contraseña) |
+| `MAIL_USERNAME` | Email remitente (mismo que ADMIN_EMAIL) | Sí |
+| `MAIL_PASSWORD` | No requerida con Brevo API | No |
 
-### Guía Completa
-Ver **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** para instrucciones detalladas de despliegue en cada plataforma.
+### Ejemplo `.env`
+```
+SECRET_KEY=tu-clave-secreta-aqui
+FLASK_ENV=production
+ADMIN_EMAIL=tucorreo@gmail.com
+BREVO_API_KEY=xkeysib-...
+MAIL_USERNAME=tucorreo@gmail.com
+```
 
-### Quick Deploy en Render
+---
 
-1. Push a GitHub/GitLab
-2. Crear Web Service en Render
-3. Configurar variables de entorno:
-   ```
-   SECRET_KEY=<tu-clave-generada>
-   FLASK_ENV=production
-   ```
+## Despliegue en Render
+
+1. Push a GitHub
+2. Crear Web Service en Render apuntando al repo
+3. Configurar las variables de entorno listadas arriba
 4. Deploy automático
 
----
-
-##  Seguridad
-
-### Configuración por Entorno
-
-**Desarrollo:**
-- `DEBUG=True`
-- `SESSION_COOKIE_SECURE=False` (permite HTTP)
-- SECRET_KEY por defecto
-
-**Producción:**
-- `DEBUG=False` (automático)
-- `SESSION_COOKIE_SECURE=True` (solo HTTPS)
-- SECRET_KEY desde variable de entorno (obligatorio)
-
-### Características de Seguridad
--  Contraseñas hasheadas (PBKDF2-SHA256)
--  Sesiones seguras con cookies HttpOnly
--  Protección CSRF integrada
--  SQL injection prevention (consultas parametrizadas)
-- XSS protection (escape automático de Jinja2)
--  Variables de entorno para secretos
-
-Ver **[docs/SEGURIDAD.md](docs/SEGURIDAD.md)** para más detalles.
+> **Nota:** En el plan free de Render el disco no es persistente. Las fotos de evidencia se borran al redesplegar. Para persistencia real se requiere un plan paid o almacenamiento externo (S3, Cloudinary).
 
 ---
 
-##  Documentación
+## Flujo de Primer Arranque
 
-### Documentación Esencial
-- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Guía completa de despliegue
-- **[CASOS_DE_USO.md](docs/CASOS_DE_USO.md)** - 12 casos de uso detallados
-- **[TECNOLOGIAS.md](docs/TECNOLOGIAS.md)** - Stack tecnológico completo
-- **[SEGURIDAD.md](docs/SEGURIDAD.md)** - Guía de seguridad
-- **[INICIO_RAPIDO.md](docs/INICIO_RAPIDO.md)** - Quick start guide
+1. `/setup` — Crear usuario administrador (usuario, contraseña, email)
+2. `/onboarding` — Datos del taller (nombre, dirección, teléfono, etc.)
+3. `/login` — Iniciar sesión normalmente
 
----
-
-##  Comandos Útiles
-
-### Desarrollo
-```bash
-# Iniciar en modo desarrollo
-export FLASK_ENV=development
-python wsgi.py
-
-# Generar SECRET_KEY
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-### Producción (Local)
-```bash
-# Con Gunicorn
-gunicorn wsgi:app --bind 0.0.0.0:8000 --workers 4
-```
-
-### Base de Datos
-```bash
-# Backup
-cp instance/taller_felinormar.db backups/backup_$(date +%Y%m%d).db
-
-# Restaurar
-cp backups/backup_YYYYMMDD.db instance/taller_felinormar.db
-```
+El onboarding solo se muestra una vez. Después se puede editar desde **Configuración** en el sidebar.
 
 ---
 
-##  Módulos y Funcionalidades
+## Módulos y Funcionalidades
 
 ### 1. Gestión de Órdenes
 - Folios automáticos (FN-XXXX)
@@ -255,147 +193,109 @@ cp backups/backup_YYYYMMDD.db instance/taller_felinormar.db
 - Anticipo y saldo pendiente
 - Notas internas del técnico
 
-### 2. Estatus del Flujo
+### 2. Evidencia Fotográfica
+- Subida de fotos por orden (hasta 16 MB por foto)
+- Botón para abrir cámara directamente desde el dispositivo
+- Fotos visibles en la página pública del cliente
+- Almacenadas en `static/uploads/`
+
+### 3. Recuperación de Contraseña
+- Link "¿Olvidaste tu contraseña?" en el login
+- Envío de correo con token de un solo uso (expira en 1 hora)
+- Implementado con **Brevo API** (no SMTP)
+- Solo disponible para el administrador
+
+### 4. Configuración del Taller
+- Datos guardados en tabla `configuracion` de la BD
+- Editables desde el sidebar → Configuración (solo admin)
+- Se muestran en la página pública de estatus del cliente
+
+### 5. Estatus del Flujo
 | Estatus | Descripción |
 |---------|-------------|
-|  Recibido | Equipo ingresado |
-|  En Proceso | Reparación en curso |
-|  Listo | Reparación completada |
-|  Entregado | Equipo entregado |
+| Recibido | Equipo ingresado |
+| En Proceso | Reparación en curso |
+| Listo | Reparación completada |
+| Entregado | Equipo entregado |
 
-### 3. Código QR Automático
+### 6. Código QR Automático
 - Generado al abrir detalle de orden
 - Contiene: Folio, Cliente, Equipo
 - Botón de impresión
 
-### 4. Notificación WhatsApp
+### 7. Notificación WhatsApp
 - Botón directo cuando estatus es "Listo"
 - Mensaje pre-llenado con costos y saldo
 
-### 5. Garantía Automática
-- Se registra al marcar "Entregado"
-- Período de 30 días desde entrega
-
-### 6. Dashboard Analítico
+### 8. Dashboard Analítico
 - Top 5 modelos más frecuentes
 - Reporte financiero (Semana/Mes/Año)
 - Distribución por estatus
 - KPIs: Total órdenes, Ingresos, Pendientes
 
-### 7. Roles de Usuario
+### 9. Roles de Usuario
 | Rol | Permisos |
 |-----|----------|
-| **Admin** | Todo: órdenes, dashboard, usuarios, catálogo |
-| **Técnico** | Órdenes y dashboard (sin gestión de usuarios) |
+| **Admin** | Todo: órdenes, dashboard, usuarios, catálogo, configuración |
+| **Técnico** | Órdenes y dashboard (sin gestión de usuarios ni configuración) |
 
 ---
 
-##  Diferencias con Versión Anterior
+## Base de Datos — Tablas
 
-### Mejoras en v2.0
+| Tabla | Descripción |
+|-------|-------------|
+| `usuarios` | Usuarios del sistema (usuario, password, rol, email) |
+| `clientes` | Datos de clientes |
+| `ordenes` | Órdenes de servicio |
+| `reparaciones` | Catálogo de reparaciones |
+| `evidencias` | Fotos por orden (folio, filename, fecha) |
+| `reset_tokens` | Tokens de recuperación de contraseña |
+| `configuracion` | Datos del taller (nombre, dirección, teléfono, etc.) |
 
- **Arquitectura Profesional**
-- Factory Pattern para crear la app
-- Blueprints para rutas modulares
-- Separación de responsabilidades (MVC)
+---
 
- **Configuración por Entorno**
-- Development, Production, Testing
-- Variables de entorno
-- DEBUG automático según entorno
+## Seguridad
 
- **Seguridad Mejorada**
+- Contraseñas hasheadas (PBKDF2-SHA256)
+- Sesiones seguras con cookies HttpOnly
+- SQL injection prevention (consultas parametrizadas)
+- XSS protection (escape automático de Jinja2)
+- Headers de seguridad HTTP en todas las respuestas
 - SECRET_KEY obligatoria en producción
-- Cookies seguras (HttpOnly, Secure)
-- Rutas absolutas para BD
-
-**Production-Ready**
-- Gunicorn configurado
-- Procfile para plataformas cloud
-- Carpeta instance/ para persistencia
-- Logs y monitoreo
-
-**Mantenibilidad**
-- Código modular y organizado
-- Fácil de escalar
-- Documentación completa
+- Tokens de recuperación de un solo uso con expiración
 
 ---
 
-##  Solución de Problemas
+## Solución de Problemas
 
-### Error: "No module named 'app'"
+**Error: "No module named 'app'"**
 ```bash
-# Asegúrate de estar en el directorio correcto
 cd taller_felinormar
 python wsgi.py
 ```
 
-### Error: "SECRET_KEY not configured"
+**Error: "SECRET_KEY not configured"**
 ```bash
-# Configurar variable de entorno
 export SECRET_KEY="tu-clave-aqui"
 ```
 
-### Error: "Database is locked"
-```bash
-# Reiniciar la aplicación
-# En desarrollo: Ctrl+C y volver a iniciar
-# En producción: Reiniciar Gunicorn
-```
+**No llega el correo de recuperación**
+- Verificar que `BREVO_API_KEY` esté configurada en Render
+- Verificar que `ADMIN_EMAIL` coincida exactamente con el email registrado en la BD (minúsculas)
 
-Ver más en **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#-solución-de-problemas)**
-
----
-
-##  Métricas del Proyecto
-
-- **Líneas de código:** ~1,500 (Python + HTML)
-- **Archivos:** 25+ archivos organizados
-- **Módulos:** 5 blueprints independientes
-- **Templates:** 10 plantillas HTML
-- **Casos de uso:** 12 documentados
+**Las fotos desaparecen al redesplegar en Render**
+- Es una limitación del plan free (disco efímero)
+- Solución: usar plan paid o integrar almacenamiento externo
 
 ---
 
-## Contribuir
-
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Agrega nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Crea un Pull Request
-
----
-
-##  Licencia
-
-**Licencia de Evaluación (Trial) - 15 días**
-
-Este software es propiedad de **Felipe Norberto Marcelino**.  
-Todos los derechos reservados © 2026.
-
-Se ofrece una licencia de evaluación gratuita de 15 días para:
-- Pruebas de concepto
-- Evaluación técnica
-- Uso interno no comercial
-
-Después del período de evaluación, se requiere una licencia comercial.  
-Ver [LICENSE](LICENSE) para términos completos.
-
-**Para licencias comerciales, contactar a:** Felipe Norberto Marcelino
-
----
-
-## 👤 Autor
+## Autor
 
 **Felipe Norberto Marcelino**  
-Taller Felinormar - Sistema de Gestión de Reparaciones v2.0
+Taller Felinormar — Sistema de Gestión de Reparaciones
 
----
-
-**Última actualización:** 2026-03-12  
-**Versión:** 2.0 (Production-Ready)  
+**Última actualización:** 2026-03-15  
+**Versión:** 2.1  
 **Python:** 3.11+  
-**Flask:** 3.x  
-**Desarrollado por:** Felipe Norberto Marcelino
+**Flask:** 3.x
