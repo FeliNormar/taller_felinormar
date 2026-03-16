@@ -123,8 +123,35 @@ def init_db():
         )
     ''')
 
-    # NO crear usuario admin por defecto
-    # El usuario se crea en la instalación inicial (/setup)
+    # Tabla de configuración del taller
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS configuracion (
+            id               INTEGER PRIMARY KEY DEFAULT 1,
+            nombre_taller    TEXT NOT NULL DEFAULT '',
+            nombre_propietario TEXT NOT NULL DEFAULT '',
+            email            TEXT NOT NULL DEFAULT '',
+            telefono         TEXT NOT NULL DEFAULT '',
+            calle            TEXT NOT NULL DEFAULT '',
+            colonia          TEXT NOT NULL DEFAULT '',
+            municipio        TEXT NOT NULL DEFAULT '',
+            estado           TEXT NOT NULL DEFAULT '',
+            cp               TEXT NOT NULL DEFAULT '',
+            completado       INTEGER NOT NULL DEFAULT 0
+        )
+    ''')
+
+    # Si ya hay usuarios pero no hay configuración, crear una por defecto marcada como completada
+    # (para no interrumpir instalaciones existentes)
+    user_count = c.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
+    cfg_count  = c.execute("SELECT COUNT(*) FROM configuracion").fetchone()[0]
+    if user_count > 0 and cfg_count == 0:
+        c.execute('''
+            INSERT INTO configuracion
+            (id, nombre_taller, nombre_propietario, email, telefono,
+             calle, colonia, municipio, estado, cp, completado)
+            VALUES (1, 'Taller Felinormar', 'Admin', '', '',
+                    '', '', 'Nuevo Ixcatlán', 'Veracruz', '', 1)
+        ''')
 
     # Reparaciones de ejemplo
     count = c.execute("SELECT COUNT(*) FROM reparaciones").fetchone()[0]

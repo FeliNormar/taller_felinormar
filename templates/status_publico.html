@@ -283,8 +283,9 @@
     {% if orden.estatus == 'Listo' %}
     <div class="alert-listo">
       📍 Pasa a recoger tu equipo en<br>
-      <strong>Nuevo Ixcatlán, 3ra sección, Veracruz</strong><br>
-      <small>Lun–Sáb · 9:00 am – 7:00 pm</small>
+      <strong>{% if config %}{{ config.nombre_taller }}{% else %}Taller Felinormar{% endif %}</strong><br>
+      {% if config %}{{ config.calle }}, {{ config.colonia }}, {{ config.municipio }}, {{ config.estado }}{% else %}Nuevo Ixcatlán, 3ra sección, Veracruz{% endif %}<br>
+      {% if config and config.telefono %}<small>📞 {{ config.telefono }}</small>{% endif %}
     </div>
     {% endif %}
 
@@ -319,8 +320,8 @@
   {% endif %}
 
   <div class="card-footer">
-    © 2026 Felipe Norberto Marcelino · Taller Felinormar<br>
-    Nuevo Ixcatlán, Veracruz · +52 283 115 6502
+    © 2026 {% if config %}{{ config.nombre_propietario }} · {{ config.nombre_taller }}{% else %}Felipe Norberto Marcelino · Taller Felinormar{% endif %}<br>
+    {% if config %}{{ config.municipio }}, {{ config.estado }}{% if config.telefono %} · {{ config.telefono }}{% endif %}{% else %}Nuevo Ixcatlán, Veracruz · +52 283 115 6502{% endif %}
   </div>
 
 </div>

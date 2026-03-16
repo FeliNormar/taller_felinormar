@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Datos del Taller — Felinormar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh; background: #0d0f13; color: #e8ecf4;
+      font-family: 'Inter', sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 2rem 1rem; position: relative; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,174,239,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,174,239,.04) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events: none;
+    }
+    .card {
+      background: #14171e; border: 1px solid #252a38; border-radius: 16px;
+      padding: 40px; width: 100%; max-width: 560px;
+      position: relative; z-index: 1; box-shadow: 0 40px 80px rgba(0,0,0,.5);
+    }
+    .brand { text-align: center; margin-bottom: 28px; }
+    .brand-icon { font-size: 40px; margin-bottom: 12px; }
+    .brand-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: #00AEEF; }
+    .brand-sub { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #7a8299; margin-top: 4px; }
+    .step-info { text-align: center; margin-bottom: 28px; }
+    .step-badge { display: inline-block; background: rgba(0,174,239,.1); border: 1px solid rgba(0,174,239,.3); color: #00AEEF; font-family: 'DM Mono', monospace; font-size: 11px; padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; }
+    .step-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .step-desc { font-size: 13px; color: #7a8299; }
+    .section-label { font-size: 11px; font-weight: 600; color: #00AEEF; text-transform: uppercase; letter-spacing: .1em; font-family: 'DM Mono', monospace; margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #252a38; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-grid.full { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 11px; font-weight: 500; color: #7a8299; letter-spacing: .3px; }
+    input, select {
+      background: #1c2030; border: 1px solid #252a38; border-radius: 8px;
+      color: #e8ecf4; padding: 10px 13px; font-size: 13px; font-family: inherit;
+      transition: border-color .15s, box-shadow .15s; width: 100%;
+    }
+    input:focus, select:focus { outline: none; border-color: #00AEEF; box-shadow: 0 0 0 3px rgba(0,174,239,.12); }
+    .btn { width: 100%; padding: 13px; background: #00AEEF; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; margin-top: 20px; transition: background .15s; letter-spacing: .3px; }
+    .btn:hover { background: #0098D1; }
+    .msg-error { background: rgba(231,76,60,.12); border: 1px solid rgba(231,76,60,.3); color: #f87171; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    .msg-success { background: rgba(46,204,113,.12); border: 1px solid rgba(46,204,113,.3); color: #4ade80; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    .info-box { background: rgba(0,174,239,.08); border: 1px solid rgba(0,174,239,.2); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #7a8299; margin-top: 16px; }
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } .card { padding: 24px; } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="brand-icon">🔧</div>
+      <div class="brand-name">FELINORMAR</div>
+      <div class="brand-sub">Sistema de Gestión</div>
+    </div>
+
+    <div class="step-info">
+      <div class="step-badge">Paso 2 de 2</div>
+      <div class="step-title">Datos de tu Taller</div>
+      <div class="step-desc">Esta información aparecerá en los comprobantes y en la página pública de tus clientes. Solo se pide una vez.</div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ 'msg-error' if category == 'error' else 'msg-success' }}">
+            {{ '⚠' if category == 'error' else '✓' }} {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+
+      <div class="section-label">Información del Negocio</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre del Taller *</label>
+          <input type="text" name="nombre_taller" placeholder="Ej: Taller Felinormar" required autofocus>
+        </div>
+        <div class="form-group">
+          <label>Nombre del Propietario *</label>
+          <input type="text" name="nombre_propietario" placeholder="Ej: Felipe Norberto">
+        </div>
+        <div class="form-group">
+          <label>Correo de Contacto</label>
+          <input type="email" name="email" placeholder="contacto@gmail.com">
+        </div>
+        <div class="form-group">
+          <label>Teléfono de Contacto</label>
+          <input type="text" name="telefono" placeholder="Ej: 2831156502">
+        </div>
+      </div>
+
+      <div class="section-label">Dirección del Taller</div>
+      <div class="form-grid full">
+        <div class="form-group">
+          <label>Calle y Número *</label>
+          <input type="text" name="calle" placeholder="Ej: Calle Constitución 45" required>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Colonia</label>
+          <input type="text" name="colonia" placeholder="Ej: 3ra Sección">
+        </div>
+        <div class="form-group">
+          <label>Municipio *</label>
+          <input type="text" name="municipio" placeholder="Ej: San Lucas Ojitlán" required>
+        </div>
+        <div class="form-group">
+          <label>Estado *</label>
+          <select name="estado" required>
+            <option value="">— Seleccionar —</option>
+            <option>Aguascalientes</option><option>Baja California</option><option>Baja California Sur</option>
+            <option>Campeche</option><option>Chiapas</option><option>Chihuahua</option>
+            <option>Ciudad de México</option><option>Coahuila</option><option>Colima</option>
+            <option>Durango</option><option>Estado de México</option><option>Guanajuato</option>
+            <option>Guerrero</option><option>Hidalgo</option><option>Jalisco</option>
+            <option>Michoacán</option><option>Morelos</option><option>Nayarit</option>
+            <option>Nuevo León</option><option>Oaxaca</option><option>Puebla</option>
+            <option>Querétaro</option><option>Quintana Roo</option><option>San Luis Potosí</option>
+            <option>Sinaloa</option><option>Sonora</option><option>Tabasco</option>
+            <option>Tamaulipas</option><option>Tlaxcala</option><option selected>Veracruz</option>
+            <option>Yucatán</option><option>Zacatecas</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Código Postal *</label>
+          <input type="text" name="cp" placeholder="Ej: 68400" maxlength="5" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn">✓ Guardar y Continuar</button>
+    </form>
+
+    <div class="info-box">
+      💡 Puedes editar estos datos después desde la sección de Configuración.
+    </div>
+  </div>
+</body>
+</html>

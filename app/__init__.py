@@ -157,8 +157,8 @@ def create_app(config_name='production'):
                 
                 conn.commit()
                 
-                flash('¡Sistema configurado correctamente! Inicia sesión con tus credenciales', 'success')
-                return redirect(url_for('auth.login'))
+                flash('¡Sistema configurado correctamente! Completa los datos de tu taller.', 'success')
+                return redirect(url_for('onboarding'))
                 
             except Exception as e:
                 conn.rollback()
@@ -167,6 +167,48 @@ def create_app(config_name='production'):
         
         return render_template('setup.html')
     
+    # ============================================================
+    # ONBOARDING — Datos del taller (se pide una sola vez)
+    # ============================================================
+    @app.route('/onboarding', methods=['GET', 'POST'])
+    def onboarding():
+        """Formulario de datos del taller — se muestra una sola vez tras el setup"""
+        conn = get_db()
+
+        # Si ya está completado, ir al login
+        cfg = conn.execute("SELECT completado FROM configuracion WHERE id=1").fetchone()
+        if cfg and cfg['completado'] == 1:
+            return redirect(url_for('auth.login'))
+
+        if request.method == 'POST':
+            nombre_taller     = request.form.get('nombre_taller', '').strip()
+            nombre_propietario = request.form.get('nombre_propietario', '').strip()
+            email             = request.form.get('email', '').strip()
+            telefono          = request.form.get('telefono', '').strip()
+            calle             = request.form.get('calle', '').strip()
+            colonia           = request.form.get('colonia', '').strip()
+            municipio         = request.form.get('municipio', '').strip()
+            estado            = request.form.get('estado', '').strip()
+            cp                = request.form.get('cp', '').strip()
+
+            if not all([nombre_taller, nombre_propietario, calle, municipio, estado, cp]):
+                flash('Completa todos los campos obligatorios.', 'error')
+                return render_template('onboarding.html')
+
+            conn.execute('''
+                INSERT OR REPLACE INTO configuracion
+                (id, nombre_taller, nombre_propietario, email, telefono,
+                 calle, colonia, municipio, estado, cp, completado)
+                VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            ''', (nombre_taller, nombre_propietario, email, telefono,
+                  calle, colonia, municipio, estado, cp))
+            conn.commit()
+
+            flash('¡Datos del taller guardados! Ya puedes iniciar sesión.', 'success')
+            return redirect(url_for('auth.login'))
+
+        return render_template('onboarding.html')
+
     # ============================================================
     # HEADERS DE SEGURIDAD HTTP
     # ============================================================
@@ -194,7 +236,7 @@ def create_app(config_name='production'):
         excluded_routes = {
             'setup', 'static', 'auth.login', 'auth.logout',
             'auth.forgot_password', 'auth.reset_password',
-            'ordenes.status_publico', 'migrate_email'
+            'ordenes.status_publico', 'onboarding'
         }
 
         if request.endpoint in excluded_routes or request.endpoint is None:
@@ -209,8 +251,13 @@ def create_app(config_name='production'):
             count = conn.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0]
             if count == 0:
                 return redirect(url_for('setup'))
+            # Verificar si el onboarding está completo
+            cfg = conn.execute(
+                "SELECT completado FROM configuracion WHERE id=1"
+            ).fetchone()
+            if not cfg or cfg['completado'] == 0:
+                return redirect(url_for('onboarding'))
         except Exception:
-            # Si la tabla no existe aún, redirigir a setup
             return redirect(url_for('setup'))
 
         return None

@@ -261,7 +261,8 @@ def status_publico(folio):
         evidencias = conn.execute(
             "SELECT * FROM evidencias WHERE folio=? ORDER BY id ASC", (folio,)
         ).fetchall()
-    return render_template('status_publico.html', orden=orden, folio=folio, evidencias=evidencias)
+    config = conn.execute("SELECT * FROM configuracion WHERE id=1").fetchone()
+    return render_template('status_publico.html', orden=orden, folio=folio, evidencias=evidencias, config=config)
 
 
 @ordenes_bp.route('/orden/<folio>/evidencia', methods=['POST'])
