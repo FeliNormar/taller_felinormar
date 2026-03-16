@@ -63,26 +63,6 @@ def create_app(config_name='production'):
     app.register_blueprint(dashboard_bp)
     
     # ============================================================
-    # RUTA TEMPORAL DE DIAGNÓSTICO/MIGRACIÓN (se puede borrar después)
-    # ============================================================
-    @app.route('/admin-migrate-email')
-    def migrate_email():
-        import os
-        from app.models.database import get_db
-        conn = get_db()
-        admin_email = os.environ.get('ADMIN_EMAIL', '')
-        if not admin_email:
-            return 'ADMIN_EMAIL no configurado', 400
-        conn.execute(
-            "UPDATE usuarios SET email=? WHERE rol='admin'", (admin_email,)
-        )
-        conn.commit()
-        row = conn.execute(
-            "SELECT usuario, email FROM usuarios WHERE rol='admin'"
-        ).fetchone()
-        return f'OK: {row["usuario"]} → {row["email"]}'
-
-    # ============================================================
     # RUTA DE INSTALACIÓN INICIAL (PRIMER ARRANQUE)
     # ============================================================
     @app.route('/setup', methods=['GET', 'POST'])
