@@ -47,7 +47,12 @@ def create_app(config_name='production'):
     # Inicializar base de datos
     from app.models.database import init_db, get_db
     with app.app_context():
-        init_db()
+        try:
+            init_db()
+        except Exception as e:
+            import sys
+            print(f"ERROR init_db: {e}", file=sys.stderr)
+            raise
     
     # Registrar blueprints
     from app.routes.auth import auth_bp
