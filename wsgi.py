@@ -7,6 +7,8 @@ Copyright (c) 2026 Felipe Norberto Marcelino. Todos los derechos reservados.
 """
 import os
 import sys
+from dotenv import load_dotenv
+load_dotenv()
 from app import create_app
 
 # Para PyInstaller: agregar rutas de recursos empaquetados
