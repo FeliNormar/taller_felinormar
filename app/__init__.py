@@ -59,12 +59,14 @@ def create_app(config_name='production'):
     from app.routes.usuarios import usuarios_bp
     from app.routes.reparaciones import reparaciones_bp
     from app.routes.dashboard import dashboard_bp
-    
+    from app.routes.pantallas import pantallas_bp
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(ordenes_bp)
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(reparaciones_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(pantallas_bp)
     
     # ============================================================
     # RUTA DE INSTALACIÓN INICIAL (PRIMER ARRANQUE)
