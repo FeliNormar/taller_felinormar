@@ -3,12 +3,12 @@
 {% block page_title %}Cotización{% endblock %}
 
 {% block topbar_actions %}
-  <a href="/nueva_orden" class="btn btn-outline">+ Nueva Orden directa</a>
+  <a href="/nueva_orden" class="btn btn-outline">+ Nueva Orden</a>
 {% endblock %}
 
 {% block extra_head %}
 <style>
-  .cot-layout { display:grid; grid-template-columns:1fr 380px; gap:20px; align-items:start; }
+  .cot-layout { display:grid; grid-template-columns:1fr 400px; gap:20px; align-items:start; }
   .search-panel { display:flex; flex-direction:column; gap:16px; }
   .order-panel  { position:sticky; top:80px; display:flex; flex-direction:column; gap:16px; }
 
@@ -32,18 +32,18 @@
   .marco-si { background:rgba(46,204,113,.15); color:#4ade80; }
   .marco-no { background:rgba(122,130,153,.1); color:#7a8299; }
 
-  .precio-resumen {
-    background:var(--panel); border:1px solid var(--border);
-    border-radius:10px; padding:16px;
-  }
+  .precio-resumen { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px; }
   .precio-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; }
-  .precio-row.total { border-top:1px solid var(--border); margin-top:6px; padding-top:10px; font-weight:700; font-size:15px; }
   .precio-row .label { color:var(--muted); }
   .precio-row .val { font-family:'DM Mono',monospace; }
-  .precio-row.total .val { color:var(--green); font-size:18px; }
 
   .empty-state { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
   .empty-state svg { opacity:.3; margin-bottom:10px; }
+
+  .tab-bar { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--panel); }
+  .tab-btn { flex:1; padding:9px; font-size:12px; font-weight:600; font-family:'Syne',sans-serif; border:none; cursor:pointer; transition:all .15s; }
+  .tab-btn.active { background:var(--blue); color:#fff; }
+  .tab-btn:not(.active) { background:transparent; color:var(--muted); }
 
   @media(max-width:900px){
     .cot-layout { grid-template-columns:1fr; }
@@ -58,7 +58,6 @@
   <!-- PANEL IZQUIERDO: buscador de pantallas -->
   <div class="search-panel">
 
-    <!-- Buscador -->
     <div class="card">
       <div class="card-header"><span class="card-title">Buscar Pantalla</span></div>
       <form method="GET" class="filter-row">
@@ -76,7 +75,6 @@
       </form>
     </div>
 
-    <!-- Resultados -->
     {% if pantallas %}
     <div class="card" style="padding:16px">
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace;">
@@ -122,123 +120,167 @@
 
   </div>
 
-  <!-- PANEL DERECHO: resumen + formulario de orden -->
+  <!-- PANEL DERECHO -->
   <div class="order-panel">
 
-    <!-- Resumen de precios -->
-    <div class="card">
-      <div class="card-header"><span class="card-title">Resumen de Precios</span></div>
-      <div id="resumen-vacio" style="{% if pantalla_sel %}display:none{% endif %}">
-        <div class="empty-state" style="padding:20px">
-          <div style="font-size:12px;color:var(--muted)">Selecciona una pantalla para ver precios</div>
-        </div>
-      </div>
-      <div id="resumen-precios" style="{% if not pantalla_sel %}display:none{% endif %}">
-        <div style="margin-bottom:12px">
-          <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace" id="res-marca">
-            {% if pantalla_sel %}{{ pantalla_sel.marca }}{% endif %}
-          </div>
-          <div style="font-weight:600;font-size:14px" id="res-modelo">
-            {% if pantalla_sel %}{{ pantalla_sel.modelo }}{% endif %}
-          </div>
-          <div id="res-marco" style="margin-top:4px">
-            {% if pantalla_sel %}
-              {% if pantalla_sel.con_marco %}<span class="marco-badge marco-si">Con marco</span>
-              {% else %}<span class="marco-badge marco-no">Sin marco</span>{% endif %}
-            {% endif %}
-          </div>
-        </div>
-        <div class="precio-resumen">
-          <div class="precio-row">
-            <span class="label">Precio proveedor</span>
-            <span class="val" id="res-pp">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_proveedor) }}{% endif %}</span>
-          </div>
-          <div class="precio-row">
-            <span class="label">Anticipo sugerido</span>
-            <span class="val" id="res-ant">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.anticipo) }}{% endif %}</span>
-          </div>
-          <div class="precio-row">
-            <span class="label">Precio final cliente</span>
-            <span class="val" id="res-pf">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_final) }}{% endif %}</span>
-          </div>
-          <div class="precio-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px">
-            <span class="label" style="color:var(--text);font-weight:600">Público 1</span>
-            <span class="val" style="color:var(--blue);font-size:16px" id="res-p1">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_publico_1) }}{% endif %}</span>
-          </div>
-          <div class="precio-row">
-            <span class="label" style="color:var(--text);font-weight:600">Público 2</span>
-            <span class="val" style="color:var(--green);font-size:16px" id="res-p2">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_publico_2) }}{% endif %}</span>
-          </div>
-        </div>
-      </div>
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button id="tab-cot" class="tab-btn active" onclick="switchTab('cot')">Desde catálogo</button>
+      <button id="tab-dir" class="tab-btn" onclick="switchTab('dir')">Orden directa</button>
     </div>
 
-    <!-- Formulario para crear orden -->
-    <div class="card" id="card-orden" style="{% if not pantalla_sel %}opacity:.5;pointer-events:none{% endif %}">
-      <div class="card-header"><span class="card-title">Crear Orden desde Cotización</span></div>
-      <form method="POST" action="/cotizacion" id="form-orden">
-        <input type="hidden" name="marca_equipo" id="f-marca">
-        <input type="hidden" name="modelo_equipo" id="f-modelo">
+    <!-- ── TAB CATÁLOGO ── -->
+    <div id="panel-cot" style="display:flex;flex-direction:column;gap:16px">
 
-        <div class="form-grid form-grid-2" style="gap:12px">
-          <div class="form-group">
-            <label>Nombre del Cliente *</label>
-            <input type="text" name="nombre_cliente" required placeholder="Juan García">
-          </div>
-          <div class="form-group">
-            <label>Teléfono *</label>
-            <input type="text" name="telefono" required placeholder="5512345678">
+      <!-- Resumen precios -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Resumen de Precios</span></div>
+        <div id="resumen-vacio" {% if pantalla_sel %}style="display:none"{% endif %}>
+          <div class="empty-state" style="padding:20px">
+            <div style="font-size:12px;color:var(--muted)">Selecciona una pantalla para ver precios</div>
           </div>
         </div>
-
-        <div class="form-group" style="margin-top:12px">
-          <label>Problema / Descripción</label>
-          <input type="text" name="problema" value="Cambio de pantalla" placeholder="Cambio de pantalla">
+        <div id="resumen-precios" {% if not pantalla_sel %}style="display:none"{% endif %}>
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace" id="res-marca">{% if pantalla_sel %}{{ pantalla_sel.marca }}{% endif %}</div>
+            <div style="font-weight:600;font-size:14px" id="res-modelo">{% if pantalla_sel %}{{ pantalla_sel.modelo }}{% endif %}</div>
+            <div id="res-marco" style="margin-top:4px">
+              {% if pantalla_sel %}
+                {% if pantalla_sel.con_marco %}<span class="marco-badge marco-si">Con marco</span>
+                {% else %}<span class="marco-badge marco-no">Sin marco</span>{% endif %}
+              {% endif %}
+            </div>
+          </div>
+          <div class="precio-resumen">
+            <div class="precio-row"><span class="label">Precio proveedor</span><span class="val" id="res-pp">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_proveedor) }}{% endif %}</span></div>
+            <div class="precio-row"><span class="label">Anticipo sugerido</span><span class="val" id="res-ant">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.anticipo) }}{% endif %}</span></div>
+            <div class="precio-row"><span class="label">Precio final cliente</span><span class="val" id="res-pf">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_final) }}{% endif %}</span></div>
+            <div class="precio-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px">
+              <span class="label" style="color:var(--text);font-weight:600">Público 1</span>
+              <span class="val" style="color:var(--blue);font-size:16px" id="res-p1">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_publico_1) }}{% endif %}</span>
+            </div>
+            <div class="precio-row">
+              <span class="label" style="color:var(--text);font-weight:600">Público 2</span>
+              <span class="val" style="color:var(--green);font-size:16px" id="res-p2">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_publico_2) }}{% endif %}</span>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="form-group" style="margin-top:12px">
-          <label>IMEI (opcional)</label>
-          <input type="text" name="imei" placeholder="15 dígitos">
-        </div>
-
-        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-          <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:10px">COSTOS</div>
+      <!-- Formulario orden desde catálogo -->
+      <div class="card" id="card-orden" {% if not pantalla_sel %}style="opacity:.5;pointer-events:none"{% endif %}>
+        <div class="card-header"><span class="card-title">Crear Orden</span></div>
+        <form method="POST" action="/cotizacion" id="form-orden">
+          <input type="hidden" name="marca_equipo" id="f-marca">
+          <input type="hidden" name="modelo_equipo" id="f-modelo">
           <div class="form-grid form-grid-2" style="gap:12px">
-            <div class="form-group">
-              <label>Costo Total ($)</label>
-              <input type="number" name="costo_total" id="f-costo" step="0.01" min="0" value="{% if pantalla_sel %}{{ pantalla_sel.precio_publico_1 }}{% else %}0{% endif %}">
-            </div>
-            <div class="form-group">
-              <label>Anticipo ($)</label>
-              <input type="number" name="anticipo" id="f-anticipo" step="0.01" min="0" value="{% if pantalla_sel %}{{ pantalla_sel.anticipo }}{% else %}0{% endif %}">
+            <div class="form-group"><label>Nombre del Cliente *</label><input type="text" name="nombre_cliente" required placeholder="Juan García"></div>
+            <div class="form-group"><label>Teléfono *</label><input type="text" name="telefono" required placeholder="5512345678"></div>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label>Problema / Descripción</label>
+            <input type="text" name="problema" value="Cambio de pantalla" placeholder="Cambio de pantalla">
+          </div>
+          <div class="form-grid form-grid-2" style="gap:12px;margin-top:12px">
+            <div class="form-group"><label>IMEI (opcional)</label><input type="text" name="imei" placeholder="15 dígitos"></div>
+            <div class="form-group"><label>Contraseña / PIN</label><input type="text" name="contrasena" placeholder="Opcional"></div>
+          </div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:10px">COSTOS</div>
+            <div class="form-grid form-grid-2" style="gap:12px">
+              <div class="form-group"><label>Costo Total ($)</label><input type="number" name="costo_total" id="f-costo" step="0.01" min="0" value="{% if pantalla_sel %}{{ pantalla_sel.precio_publico_1 }}{% else %}0{% endif %}"></div>
+              <div class="form-group"><label>Anticipo ($)</label><input type="number" name="anticipo" id="f-anticipo" step="0.01" min="0" value="{% if pantalla_sel %}{{ pantalla_sel.anticipo }}{% else %}0{% endif %}"></div>
             </div>
           </div>
-        </div>
+          <div class="form-group" style="margin-top:12px">
+            <label>Notas internas</label>
+            <textarea name="notas" rows="2" placeholder="Observaciones..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:11px;font-family:'Syne',sans-serif;font-weight:700">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Crear Orden
+          </button>
+        </form>
+      </div>
 
-        <div class="form-group" style="margin-top:12px">
-          <label>Notas internas</label>
-          <textarea name="notas" rows="2" placeholder="Observaciones..."></textarea>
-        </div>
+    </div><!-- /panel-cot -->
 
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:11px;font-family:'Syne',sans-serif;font-weight:700">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Crear Orden
-        </button>
-      </form>
-    </div>
+    <!-- ── TAB ORDEN DIRECTA ── -->
+    <div id="panel-dir" style="display:none">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Nueva Orden Directa</span></div>
+        <form method="POST" action="/nueva_orden">
+          <div class="form-grid form-grid-2" style="gap:12px">
+            <div class="form-group"><label>Nombre del Cliente *</label><input type="text" name="nombre_cliente" required placeholder="Juan García"></div>
+            <div class="form-group"><label>Teléfono *</label><input type="text" name="telefono" required placeholder="5512345678"></div>
+          </div>
+          <div class="form-grid form-grid-2" style="gap:12px;margin-top:12px">
+            <div class="form-group">
+              <label>Marca *</label>
+              <select name="marca" required>
+                <option value="">— Seleccionar —</option>
+                <option>Apple</option><option>Samsung</option><option>Xiaomi</option>
+                <option>Motorola</option><option>Huawei</option><option>LG</option>
+                <option>OnePlus</option><option>Google</option><option>Otro</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Modelo *</label><input type="text" name="modelo" required placeholder="iPhone 13 Pro"></div>
+          </div>
+          <div class="form-grid form-grid-2" style="gap:12px;margin-top:12px">
+            <div class="form-group"><label>IMEI (opcional)</label><input type="text" name="imei" placeholder="15 dígitos"></div>
+            <div class="form-group"><label>Contraseña / PIN</label><input type="text" name="contrasena" placeholder="Opcional"></div>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label>Falla Reportada *</label>
+            <textarea name="problema" required rows="2" placeholder="Describe el problema..."></textarea>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label>Tipo de Reparación</label>
+            <select name="reparacion_id" id="dir-rep-select">
+              <option value="">— Sin asignar —</option>
+              {% for r in reparaciones %}
+              <option value="{{ r.id }}" data-costo="{{ r.costo }}">{{ r.descripcion }} — ${{ "%.0f"|format(r.costo) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-grid form-grid-2" style="gap:12px;margin-top:12px">
+            <div class="form-group"><label>Costo Total ($)</label><input type="number" name="costo_total" id="dir-costo" step="0.01" min="0" value="0"></div>
+            <div class="form-group"><label>Anticipo ($)</label><input type="number" name="anticipo" step="0.01" min="0" value="0"></div>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label>Notas internas</label>
+            <textarea name="notas" rows="2" placeholder="Observaciones, accesorios recibidos..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:11px;font-family:'Syne',sans-serif;font-weight:700">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Crear Orden
+          </button>
+        </form>
+      </div>
+    </div><!-- /panel-dir -->
 
-  </div>
+  </div><!-- /order-panel -->
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+function switchTab(tab) {
+  var isCot = tab === 'cot';
+  var panelCot = document.getElementById('panel-cot');
+  var panelDir = document.getElementById('panel-dir');
+  panelCot.style.display = isCot ? 'flex' : 'none';
+  panelCot.style.flexDirection = 'column';
+  panelCot.style.gap = '16px';
+  panelDir.style.display = isCot ? 'none' : 'block';
+  document.getElementById('tab-cot').className = 'tab-btn' + (isCot ? ' active' : '');
+  document.getElementById('tab-dir').className = 'tab-btn' + (isCot ? '' : ' active');
+}
+
 function seleccionarPantalla(id, marca, modelo, con_marco, pp, ant, pf, p1, p2) {
-  // Resaltar item seleccionado
-  document.querySelectorAll('.pantalla-item').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.pantalla-item').forEach(function(el){ el.classList.remove('selected'); });
   event.currentTarget.classList.add('selected');
 
-  // Mostrar resumen
   document.getElementById('resumen-vacio').style.display = 'none';
   document.getElementById('resumen-precios').style.display = 'block';
 
@@ -248,23 +290,26 @@ function seleccionarPantalla(id, marca, modelo, con_marco, pp, ant, pf, p1, p2) 
     ? '<span class="marco-badge marco-si">Con marco</span>'
     : '<span class="marco-badge marco-no">Sin marco</span>';
 
-  const fmt = v => v > 0 ? '$' + v.toFixed(2) : '—';
+  function fmt(v) { return v > 0 ? '$' + v.toFixed(2) : '—'; }
   document.getElementById('res-pp').textContent  = fmt(pp);
   document.getElementById('res-ant').textContent = fmt(ant);
   document.getElementById('res-pf').textContent  = fmt(pf);
   document.getElementById('res-p1').textContent  = fmt(p1);
   document.getElementById('res-p2').textContent  = fmt(p2);
 
-  // Rellenar formulario de orden
-  document.getElementById('f-marca').value   = marca;
-  document.getElementById('f-modelo').value  = modelo;
-  document.getElementById('f-costo').value   = p1 > 0 ? p1 : pf;
+  document.getElementById('f-marca').value    = marca;
+  document.getElementById('f-modelo').value   = modelo;
+  document.getElementById('f-costo').value    = p1 > 0 ? p1 : pf;
   document.getElementById('f-anticipo').value = ant > 0 ? ant : 0;
 
-  // Habilitar panel de orden
-  const card = document.getElementById('card-orden');
+  var card = document.getElementById('card-orden');
   card.style.opacity = '1';
   card.style.pointerEvents = 'auto';
 }
+
+document.getElementById('dir-rep-select').addEventListener('change', function() {
+  var costo = this.selectedOptions[0].dataset.costo;
+  if (costo) document.getElementById('dir-costo').value = costo;
+});
 </script>
 {% endblock %}
