@@ -1,0 +1,49 @@
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+  <div class="form-group">
+    <label>Marca *</label>
+    <input type="text" name="marca" placeholder="Ej: SAMSUNG" required style="text-transform:uppercase">
+  </div>
+  <div class="form-group">
+    <label>Modelo *</label>
+    <input type="text" name="modelo" placeholder="Ej: MOD A15 INCELL" required style="text-transform:uppercase">
+  </div>
+</div>
+
+<div class="form-group" style="margin-top:12px;">
+  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+    <input type="checkbox" name="con_marco" style="width:16px;height:16px;accent-color:#00AEEF">
+    Con marco
+  </label>
+</div>
+
+<div style="margin-top:16px;padding-top:12px;border-top:1px solid #252a38;">
+  <div style="font-size:11px;color:#7a8299;font-family:'DM Mono',monospace;letter-spacing:.1em;margin-bottom:10px;">PRECIOS INTERNOS</div>
+  <div class="price-grid">
+    <div class="form-group">
+      <label>Precio Proveedor</label>
+      <input type="number" name="precio_proveedor" step="0.01" min="0" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label>Anticipo al Cliente</label>
+      <input type="number" name="anticipo" step="0.01" min="0" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label>Precio Final al Cliente</label>
+      <input type="number" name="precio_final" step="0.01" min="0" placeholder="0.00">
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:16px;padding-top:12px;border-top:1px solid #252a38;">
+  <div style="font-size:11px;color:#7a8299;font-family:'DM Mono',monospace;letter-spacing:.1em;margin-bottom:10px;">PRECIOS PÚBLICOS</div>
+  <div class="price-grid">
+    <div class="form-group">
+      <label>Precio Público 1</label>
+      <input type="number" name="precio_publico_1" step="0.01" min="0" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label>Precio Público 2</label>
+      <input type="number" name="precio_publico_2" step="0.01" min="0" placeholder="0.00">
+    </div>
+  </div>
+</div>

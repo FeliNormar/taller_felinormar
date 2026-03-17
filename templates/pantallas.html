@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Pantallas — Taller Felinormar{% endblock %}
+{% block page_title %}Catálogo de Pantallas{% endblock %}
+
+{% block topbar_actions %}
+  <button onclick="document.getElementById('modal-nueva').style.display='flex'" class="btn btn-primary">+ Nueva Pantalla</button>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .precio-cell { font-family:'DM Mono',monospace; font-size:12px; }
+  .marco-badge { display:inline-block; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; }
+  .marco-si { background:rgba(46,204,113,.15); color:#4ade80; }
+  .marco-no { background:rgba(122,130,153,.1); color:#7a8299; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
+  .modal-box { background:#14171e; border:1px solid #252a38; border-radius:14px; padding:28px; width:100%; max-width:640px; max-height:90vh; overflow-y:auto; }
+  .modal-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; margin-bottom:20px; }
+  .price-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+  .filter-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center; }
+  .filter-row input, .filter-row select { max-width:220px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}{% for cat,msg in messages %}
+    <div class="alert alert-{{ cat }}" style="max-width:700px">{{ msg }}</div>
+  {% endfor %}{% endif %}
+{% endwith %}
+
+<!-- Filtros -->
+<form method="GET" class="filter-row">
+  <input type="text" name="q" value="{{ q }}" placeholder="Buscar modelo..." class="search-input">
+  <select name="marca">
+    <option value="">Todas las marcas</option>
+    {% for m in marcas %}
+    <option value="{{ m }}" {% if m == marca_sel %}selected{% endif %}>{{ m }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-outline">Filtrar</button>
+  {% if q or marca_sel %}<a href="/pantallas" class="btn btn-outline">✕ Limpiar</a>{% endif %}
+</form>
+
+<!-- Tabla -->
+<div class="card" style="padding:0;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>Marco</th>
+          <th>Proveedor</th>
+          <th>Anticipo</th>
+          <th>Precio Final</th>
+          <th>Público 1</th>
+          <th>Público 2</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pantallas %}
+        <tr>
+          <td style="color:var(--muted);font-size:12px">{{ p.marca }}</td>
+          <td style="font-weight:500;font-size:13px">{{ p.modelo }}</td>
+          <td>
+            {% if p.con_marco %}
+            <span class="marco-badge marco-si">Con marco</span>
+            {% else %}
+            <span class="marco-badge marco-no">Sin marco</span>
+            {% endif %}
+          </td>
+          <td class="precio-cell">${{ "%.2f"|format(p.precio_proveedor) }}</td>
+          <td class="precio-cell">${{ "%.2f"|format(p.anticipo) }}</td>
+          <td class="precio-cell" style="color:var(--green)">${{ "%.2f"|format(p.precio_final) }}</td>
+          <td class="precio-cell">${{ "%.2f"|format(p.precio_publico_1) }}</td>
+          <td class="precio-cell">${{ "%.2f"|format(p.precio_publico_2) }}</td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button onclick="abrirEditar({{ p.id }},'{{ p.marca }}','{{ p.modelo }}',{{ p.con_marco }},{{ p.precio_proveedor }},{{ p.anticipo }},{{ p.precio_final }},{{ p.precio_publico_1 }},{{ p.precio_publico_2 }})"
+                class="btn btn-outline btn-sm">✏️</button>
+              <form method="POST" action="/pantallas/eliminar/{{ p.id }}"
+                onsubmit="return confirm('¿Eliminar {{ p.modelo }}?')">
+                <button type="submit" class="btn btn-danger btn-sm">✕</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">
+          No hay pantallas registradas aún.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL NUEVA -->
+<div id="modal-nueva" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">➕ Nueva Pantalla</div>
+    <form method="POST" action="/pantallas/nueva">
+      {% include '_form_pantalla.html' %}
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button type="submit" class="btn btn-primary" style="flex:1">Guardar</button>
+        <button type="button" onclick="document.getElementById('modal-nueva').style.display='none'"
+          class="btn btn-outline" style="flex:1">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div id="modal-editar" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">✏️ Editar Pantalla</div>
+    <form method="POST" id="form-editar">
+      {% include '_form_pantalla.html' %}
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button type="submit" class="btn btn-primary" style="flex:1">Guardar Cambios</button>
+        <button type="button" onclick="document.getElementById('modal-editar').style.display='none'"
+          class="btn btn-outline" style="flex:1">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function abrirEditar(id, marca, modelo, con_marco, pp, ant, pf, p1, p2) {
+  const f = document.getElementById('form-editar');
+  f.action = '/pantallas/editar/' + id;
+  f.querySelector('[name=marca]').value = marca;
+  f.querySelector('[name=modelo]').value = modelo;
+  f.querySelector('[name=con_marco]').checked = con_marco == 1;
+  f.querySelector('[name=precio_proveedor]').value = pp;
+  f.querySelector('[name=anticipo]').value = ant;
+  f.querySelector('[name=precio_final]').value = pf;
+  f.querySelector('[name=precio_publico_1]').value = p1;
+  f.querySelector('[name=precio_publico_2]').value = p2;
+  document.getElementById('modal-editar').style.display = 'flex';
+}
+// Cerrar modales al click fuera
+['modal-nueva','modal-editar'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+});
+</script>
+{% endblock %}

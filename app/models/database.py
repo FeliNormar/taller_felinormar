@@ -309,6 +309,32 @@ def init_db():
         )
     ''')
 
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS pantallas (
+            id                INTEGER PRIMARY KEY DEFAULT 1,
+            marca             TEXT NOT NULL DEFAULT '',
+            modelo            TEXT NOT NULL,
+            con_marco         INTEGER NOT NULL DEFAULT 0,
+            precio_proveedor  REAL NOT NULL DEFAULT 0,
+            anticipo          REAL NOT NULL DEFAULT 0,
+            precio_final      REAL NOT NULL DEFAULT 0,
+            precio_publico_1  REAL NOT NULL DEFAULT 0,
+            precio_publico_2  REAL NOT NULL DEFAULT 0
+        )
+    ''' if not USE_POSTGRES else '''
+        CREATE TABLE IF NOT EXISTS pantallas (
+            id                SERIAL PRIMARY KEY,
+            marca             TEXT NOT NULL DEFAULT '',
+            modelo            TEXT NOT NULL,
+            con_marco         INTEGER NOT NULL DEFAULT 0,
+            precio_proveedor  REAL NOT NULL DEFAULT 0,
+            anticipo          REAL NOT NULL DEFAULT 0,
+            precio_final      REAL NOT NULL DEFAULT 0,
+            precio_publico_1  REAL NOT NULL DEFAULT 0,
+            precio_publico_2  REAL NOT NULL DEFAULT 0
+        )
+    ''')
+
     # Commit de todas las tablas antes de cualquier DML
     db.commit()
 
