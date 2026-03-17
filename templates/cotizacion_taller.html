@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% block title %}Cotización — Taller Felinormar{% endblock %}
+{% block page_title %}Cotización{% endblock %}
+
+{% block topbar_actions %}
+  <a href="/nueva_orden" class="btn btn-outline">+ Nueva Orden directa</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .cot-layout { display:grid; grid-template-columns:1fr 380px; gap:20px; align-items:start; }
+  .search-panel { display:flex; flex-direction:column; gap:16px; }
+  .order-panel  { position:sticky; top:80px; display:flex; flex-direction:column; gap:16px; }
+
+  .filter-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .filter-row input, .filter-row select { max-width:220px; }
+
+  .pantalla-list { display:flex; flex-direction:column; gap:6px; max-height:420px; overflow-y:auto; }
+  .pantalla-item {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; border-radius:8px;
+    border:1px solid var(--border); background:var(--panel);
+    cursor:pointer; transition:all .15s; gap:10px;
+  }
+  .pantalla-item:hover { border-color:var(--blue); background:rgba(0,174,239,.06); }
+  .pantalla-item.selected { border-color:var(--blue); background:rgba(0,174,239,.1); }
+  .pantalla-item .pi-info { flex:1; min-width:0; }
+  .pantalla-item .pi-marca { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; }
+  .pantalla-item .pi-modelo { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pantalla-item .pi-precio { font-family:'DM Mono',monospace; font-size:12px; color:var(--green); white-space:nowrap; }
+  .marco-badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:10px; font-weight:600; }
+  .marco-si { background:rgba(46,204,113,.15); color:#4ade80; }
+  .marco-no { background:rgba(122,130,153,.1); color:#7a8299; }
+
+  .precio-resumen {
+    background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:16px;
+  }
+  .precio-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; }
+  .precio-row.total { border-top:1px solid var(--border); margin-top:6px; padding-top:10px; font-weight:700; font-size:15px; }
+  .precio-row .label { color:var(--muted); }
+  .precio-row .val { font-family:'DM Mono',monospace; }
+  .precio-row.total .val { color:var(--green); font-size:18px; }
+
+  .empty-state { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
+  .empty-state svg { opacity:.3; margin-bottom:10px; }
+
+  @media(max-width:900px){
+    .cot-layout { grid-template-columns:1fr; }
+    .order-panel { position:static; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cot-layout">
+
+  <!-- PANEL IZQUIERDO: buscador de pantallas -->
+  <div class="search-panel">
+
+    <!-- Buscador -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Buscar Pantalla</span></div>
+      <form method="GET" class="filter-row">
+        <input type="text" name="q" value="{{ q }}" placeholder="Modelo..." class="search-input" style="flex:1">
+        <select name="marca" style="max-width:180px">
+          <option value="">Todas las marcas</option>
+          {% for m in marcas %}
+          <option value="{{ m }}" {% if m == marca_sel %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        {% if q or marca_sel %}
+        <a href="/cotizacion" class="btn btn-outline">✕</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- Resultados -->
+    {% if pantallas %}
+    <div class="card" style="padding:16px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace;">
+        {{ pantallas|length }} resultado(s)
+      </div>
+      <div class="pantalla-list">
+        {% for p in pantallas %}
+        <div class="pantalla-item {% if pantalla_sel and pantalla_sel.id == p.id %}selected{% endif %}"
+             onclick="seleccionarPantalla({{ p.id }}, '{{ p.marca }}', '{{ p.modelo|replace("'","\\'")|replace('"','\\"') }}', {{ p.con_marco }}, {{ p.precio_proveedor }}, {{ p.anticipo }}, {{ p.precio_final }}, {{ p.precio_publico_1 }}, {{ p.precio_publico_2 }})">
+          <div class="pi-info">
+            <div class="pi-marca">{{ p.marca }}</div>
+            <div class="pi-modelo">{{ p.modelo }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            {% if p.con_marco %}
+            <span class="marco-badge marco-si">Con marco</span>
+            {% else %}
+            <span class="marco-badge marco-no">Sin marco</span>
+            {% endif %}
+            {% if p.precio_publico_1 > 0 %}
+            <span class="pi-precio">${{ "%.0f"|format(p.precio_publico_1) }}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% elif q or marca_sel %}
+    <div class="card">
+      <div class="empty-state">
+        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div>Sin resultados para "{{ q or marca_sel }}"</div>
+      </div>
+    </div>
+    {% else %}
+    <div class="card">
+      <div class="empty-state">
+        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <div>Busca una pantalla para comenzar la cotización</div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- PANEL DERECHO: resumen + formulario de orden -->
+  <div class="order-panel">
+
+    <!-- Resumen de precios -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Resumen de Precios</span></div>
+      <div id="resumen-vacio" style="{% if pantalla_sel %}display:none{% endif %}">
+        <div class="empty-state" style="padding:20px">
+          <div style="font-size:12px;color:var(--muted)">Selecciona una pantalla para ver precios</div>
+        </div>
+      </div>
+      <div id="resumen-precios" style="{% if not pantalla_sel %}display:none{% endif %}">
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace" id="res-marca">
+            {% if pantalla_sel %}{{ pantalla_sel.marca }}{% endif %}
+          </div>
+          <div style="font-weight:600;font-size:14px" id="res-modelo">
+            {% if pantalla_sel %}{{ pantalla_sel.modelo }}{% endif %}
+          </div>
+          <div id="res-marco" style="margin-top:4px">
+            {% if pantalla_sel %}
+              {% if pantalla_sel.con_marco %}<span class="marco-badge marco-si">Con marco</span>
+              {% else %}<span class="marco-badge marco-no">Sin marco</span>{% endif %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="precio-resumen">
+          <div class="precio-row">
+            <span class="label">Precio proveedor</span>
+            <span class="val" id="res-pp">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_proveedor) }}{% endif %}</span>
+          </div>
+          <div class="precio-row">
+            <span class="label">Anticipo sugerido</span>
+            <span class="val" id="res-ant">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.anticipo) }}{% endif %}</span>
+          </div>
+          <div class="precio-row">
+            <span class="label">Precio final cliente</span>
+            <span class="val" id="res-pf">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_final) }}{% endif %}</span>
+          </div>
+          <div class="precio-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px">
+            <span class="label" style="color:var(--text);font-weight:600">Público 1</span>
+            <span class="val" style="color:var(--blue);font-size:16px" id="res-p1">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_publico_1) }}{% endif %}</span>
+          </div>
+          <div class="precio-row">
+            <span class="label" style="color:var(--text);font-weight:600">Público 2</span>
+            <span class="val" style="color:var(--green);font-size:16px" id="res-p2">{% if pantalla_sel %}${{ "%.2f"|format(pantalla_sel.precio_publico_2) }}{% endif %}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario para crear orden -->
+    <div class="card" id="card-orden" style="{% if not pantalla_sel %}opacity:.5;pointer-events:none{% endif %}">
+      <div class="card-header"><span class="card-title">Crear Orden desde Cotización</span></div>
+      <form method="POST" action="/cotizacion" id="form-orden">
+        <input type="hidden" name="marca_equipo" id="f-marca">
+        <input type="hidden" name="modelo_equipo" id="f-modelo">
+
+        <div class="form-grid form-grid-2" style="gap:12px">
+          <div class="form-group">
+            <label>Nombre del Cliente *</label>
+            <input type="text" name="nombre_cliente" required placeholder="Juan García">
+          </div>
+          <div class="form-group">
+            <label>Teléfono *</label>
+            <input type="text" name="telefono" required placeholder="5512345678">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:12px">
+          <label>Problema / Descripción</label>
+          <input type="text" name="problema" value="Cambio de pantalla" placeholder="Cambio de pantalla">
+        </div>
+
+        <div class="form-group" style="margin-top:12px">
+          <label>IMEI (opcional)</label>
+          <input type="text" name="imei" placeholder="15 dígitos">
+        </div>
+
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:10px">COSTOS</div>
+          <div class="form-grid form-grid-2" style="gap:12px">
+            <div class="form-group">
+              <label>Costo Total ($)</label>
+              <input type="number" name="costo_total" id="f-costo" step="0.01" min="0" value="{% if pantalla_sel %}{{ pantalla_sel.precio_publico_1 }}{% else %}0{% endif %}">
+            </div>
+            <div class="form-group">
+              <label>Anticipo ($)</label>
+              <input type="number" name="anticipo" id="f-anticipo" step="0.01" min="0" value="{% if pantalla_sel %}{{ pantalla_sel.anticipo }}{% else %}0{% endif %}">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:12px">
+          <label>Notas internas</label>
+          <textarea name="notas" rows="2" placeholder="Observaciones..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:11px;font-family:'Syne',sans-serif;font-weight:700">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Crear Orden
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function seleccionarPantalla(id, marca, modelo, con_marco, pp, ant, pf, p1, p2) {
+  // Resaltar item seleccionado
+  document.querySelectorAll('.pantalla-item').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  // Mostrar resumen
+  document.getElementById('resumen-vacio').style.display = 'none';
+  document.getElementById('resumen-precios').style.display = 'block';
+
+  document.getElementById('res-marca').textContent = marca;
+  document.getElementById('res-modelo').textContent = modelo;
+  document.getElementById('res-marco').innerHTML = con_marco
+    ? '<span class="marco-badge marco-si">Con marco</span>'
+    : '<span class="marco-badge marco-no">Sin marco</span>';
+
+  const fmt = v => v > 0 ? '$' + v.toFixed(2) : '—';
+  document.getElementById('res-pp').textContent  = fmt(pp);
+  document.getElementById('res-ant').textContent = fmt(ant);
+  document.getElementById('res-pf').textContent  = fmt(pf);
+  document.getElementById('res-p1').textContent  = fmt(p1);
+  document.getElementById('res-p2').textContent  = fmt(p2);
+
+  // Rellenar formulario de orden
+  document.getElementById('f-marca').value   = marca;
+  document.getElementById('f-modelo').value  = modelo;
+  document.getElementById('f-costo').value   = p1 > 0 ? p1 : pf;
+  document.getElementById('f-anticipo').value = ant > 0 ? ant : 0;
+
+  // Habilitar panel de orden
+  const card = document.getElementById('card-orden');
+  card.style.opacity = '1';
+  card.style.pointerEvents = 'auto';
+}
+</script>
+{% endblock %}

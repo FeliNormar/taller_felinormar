@@ -309,3 +309,94 @@ def eliminar_evidencia(folio, eid):
         conn.execute("DELETE FROM evidencias WHERE id=?", (eid,))
         conn.commit()
     return redirect(url_for('ordenes.detalle_orden', folio=folio))
+
+
+@ordenes_bp.route('/cotizacion', methods=['GET', 'POST'])
+@login_required
+def cotizacion():
+    """Cotizador de pantallas — puede convertirse en orden"""
+    from app.models.database import USE_POSTGRES
+    conn = get_db()
+    PH = '%s' if USE_POSTGRES else '?'
+
+    # Marcas disponibles para el filtro
+    marcas = [r[0] for r in conn.execute(
+        "SELECT DISTINCT marca FROM pantallas ORDER BY marca"
+    ).fetchall()]
+
+    q      = request.args.get('q', '').strip()
+    marca  = request.args.get('marca', '').strip()
+
+    pantallas = []
+    if q or marca:
+        sql = "SELECT * FROM pantallas"
+        params, conds = [], []
+        if q:
+            conds.append(f"modelo LIKE {PH}")
+            params.append(f'%{q}%')
+        if marca:
+            conds.append(f"marca = {PH}")
+            params.append(marca)
+        if conds:
+            sql += ' WHERE ' + ' AND '.join(conds)
+        sql += ' ORDER BY marca, modelo'
+        pantallas = conn.execute(sql, params).fetchall()
+
+    # Pantalla seleccionada para mostrar detalle
+    pid = request.args.get('pid', type=int)
+    pantalla_sel = None
+    if pid:
+        pantalla_sel = conn.execute(
+            f"SELECT * FROM pantallas WHERE id={PH}", (pid,)
+        ).fetchone()
+
+    # POST → crear orden desde cotización
+    if request.method == 'POST':
+        nombre    = request.form['nombre_cliente'].strip()
+        telefono  = request.form['telefono'].strip()
+        marca_eq  = request.form['marca_equipo'].strip()
+        modelo_eq = request.form['modelo_equipo'].strip()
+        imei      = request.form.get('imei', '').strip()
+        contrasena = request.form.get('contrasena', '').strip()
+        problema  = request.form.get('problema', 'Cambio de pantalla').strip()
+        costo     = float(request.form.get('costo_total', 0) or 0)
+        anticipo  = float(request.form.get('anticipo', 0) or 0)
+        notas     = request.form.get('notas', '').strip()
+        fecha     = date.today().isoformat()
+        folio     = generar_folio()
+
+        cli = conn.execute(
+            f"SELECT id FROM clientes WHERE telefono={PH}", (telefono,)
+        ).fetchone()
+        if cli:
+            id_cliente = cli['id']
+        else:
+            cur = conn.execute(
+                f"INSERT INTO clientes (nombre, telefono) VALUES ({PH},{PH})",
+                (nombre, telefono)
+            )
+            id_cliente = cur.lastrowid
+
+        conn.execute(f'''
+            INSERT INTO ordenes
+            (folio, id_cliente, marca, modelo, imei, contrasena, problema,
+             costo_total, anticipo, fecha_ingreso, tecnico, notas)
+            VALUES ({PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH})
+        ''', (folio, id_cliente, marca_eq, modelo_eq, imei, contrasena,
+              problema, costo, anticipo, fecha, session['usuario'], notas))
+        conn.commit()
+
+        return redirect(url_for('ordenes.detalle_orden', folio=folio))
+
+    reparaciones = conn.execute(
+        'SELECT * FROM reparaciones ORDER BY descripcion'
+    ).fetchall()
+
+    return render_template('cotizacion_taller.html',
+        marcas=marcas, pantallas=pantallas,
+        pantalla_sel=pantalla_sel,
+        q=q, marca_sel=marca,
+        reparaciones=reparaciones,
+        hoy=date.today().isoformat(),
+        usuario=session['usuario'], rol=session['rol']
+    )
